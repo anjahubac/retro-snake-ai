@@ -1,35 +1,50 @@
 # Pixel Zmija
 
-Snake-inspired browser igra sa jednom kontrolisanom AI funkcijom („Ask AI for Hint“)
-za SITA AI Bootcamp 2026, Retro AI Engineering Challenge.
+Originalna Snake-inspired browser igra za SITA AI Bootcamp 2026. Igra radi
+lokalno uz Vite, TypeScript strict i Canvas 2D; nema backend-a, login-a,
+leaderboard-a ili spoljašnjih asseta. Week 3 kod i automatizovane provere su
+sačuvani; ručni browser review i screenshot evidence su još na čekanju. AI Hint
+je planiran za Week 4 i još nije implementiran.
 
-## Komande
+## Pokretanje
 
 ```bash
 npm install
-npm run dev        # igra u browseru
-npm test           # unit testovi + AI test matrix
-npm run eval       # eval skup E1–E5
+npm run dev
+```
+
+Kontrole: strelice ili W/A/S/D menjaju smer; Space pokreće, pauzira/nastavlja,
+a posle kraja započinje novu partiju u `ready` stanju. Space ponovo pokreće je.
+
+GameConfig može da se preda preko URL parametra `?config=<JSON>`, na primer:
+
+```text
+?config=%7B%22gridSize%22%3A12%2C%22tickMs%22%3A120%2C%22startLength%22%3A3%2C%22winScore%22%3A2%7D
+```
+
+Nevalidan config prikazuje bezbednu poruku i koristi podrazumevanu konfiguraciju.
+
+## Provere
+
+```bash
 npm run typecheck
+npm test
+npm run eval
 npm run build
 ```
 
-Demo URL parametri: `?config={"gridSize":12,"tickMs":120,"startLength":3,"winScore":10}`,
-`?ai=success|invalid_args|unsupported_tool|timeout|provider_error|malformed_final`.
+`npm test` pokreće unit i AI testove; `npm run eval` pokreće E1–E5.
 
-## Gde je šta
+## Dokazi i kontekst
 
-| Fajl | Sadržaj |
-|---|---|
-| `docs/GAME_SPEC.md` | scope, pravila, Definition of Done |
-| `docs/IMPLEMENTATION_STEPS.md` | koraci za coding agenta, sa testovima |
-| `docs/BUILD_PROMPT_V1.md` | prvi prompt (baseline) |
-| `docs/CONTEXT_MANIFEST.md` | šta model dobija, a šta ne |
-| `docs/EVALS.md` | eval skup i AI test matrix |
-| `docs/TOOL_CONTRACT.md` | ugovor za `get_game_state` |
-| `docs/EVIDENCE_003.md`, `docs/EVIDENCE_004.md` | dokazi |
-| `docs/AI_USAGE_LOG.md` | evidencija AI poziva |
-| `.github/copilot-instructions.md` | pravila koja uvek važe za AI agenta |
-| `.github/00-index.instructions.md` | rutiranje: koji modul za koji zadatak |
-| `.github/instructions/` | moduli: arhitektura, testiranje, tok rada, bezbednost, komande |
-| `AGENTS.md`, `CLAUDE.md` | ulazne tačke koje upućuju na `.github/` |
+- `docs/GAME_SPEC.md` — pravila, scope i Definition of Done.
+- `docs/BUILD_PROMPT_V1.md` — istorijski baseline prompt.
+- `docs/BUILD_PROMPT_FINAL.md` — V1 uz stvarno korišćene dopune.
+- `docs/CONTEXT_MANIFEST.md` — planerski i implementacioni kontekst.
+- `docs/EVALS.md`, `docs/EVIDENCE_003.md`, `docs/EVIDENCE_004.md` — eval-i i dokazi.
+- `docs/AI_USAGE_LOG.md` — AI iteracije i sledeće odluke.
+- `docs/runs/` — sirovi izlazi baseline-a, posle popravke i Week 3 provera.
+- `baseline` i `after-fix` tagovi čuvaju eval poređenje.
+
+`?ai=` primeri su rezervisani za budući fake AI Hint u Week 4 i trenutno nisu
+aktivni.

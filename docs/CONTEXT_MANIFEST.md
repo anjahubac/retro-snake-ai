@@ -39,3 +39,25 @@ Ako agent primeti konflikt, staje i prijavljuje ga umesto da bira sam.
 Isti korak (npr. Korak 8) se pokrene dva puta na čistoj grani: (a) samo sa
 `copilot-instructions.md`, (b) sa modulima iz rutiranja. Porede se pretpostavke,
 preskočene provere i rezultat izlazne komande. Upis u `AI_USAGE_LOG.md`.
+
+
+## Kontekst planiranja
+
+Planiranje je koristilo zadati izazov/PDF i sva tada postojeća projektna
+Markdown dokumenta, zatim traženi primer generičkih instructions. Ovaj široki
+čitalački kontekst bio je samo za planiranje; PDF i primer nisu prosleđivani
+u svakom implementacionom pozivu.
+
+## Kontekst implementacije
+
+Stvarni per-iteration kontekst je evidentiran u `AI_USAGE_LOG.md`. Ukratko:
+K1 — K1, GAME_SPEC, M1/M2 i početni project setup; K2 — K2, GAME_SPEC, tipovi/config
+i M1/M2; K3 — K3, GAME_SPEC, index/style/main/types/config/logic i M1/M4; K5 —
+K5 hipoteza, game kod/testovi/eval i baseline izlaz uz M2/M3; K7 — odobreni
+vizuelni korak, renderer API, GAME_SPEC, tri UI/render fajla i M1/M4. Za Week 4
+se koristi samo kontekst u Koracima 9–13, uključujući TOOL_CONTRACT i security
+modul. Nisu prosleđivani privatni URL-ovi, tajne, spoljni game primeri ili ceo
+PDF po implementacionom koraku.
+
+Zaštita tajni i generisanih fajlova: `.gitignore` isključuje `node_modules`,
+`dist`, `.env` i `.env.*`; završna predajna provera se čuva u K13 evidence.

@@ -55,5 +55,19 @@ Baseline UI screenshot i K3 interaktivna provera nedostaju jer browser okruženj
 
 ## Doprinos članova para
 
-- <ime>: 
-- <ime>: 
+Još nije popunjeno: imena i stvarni doprinosi oba člana nisu dostavljeni. Ne izmišljati.
+
+
+## Week 3 predaja
+
+- Automatizovani izlaz: `docs/runs/week3-checks.txt` — typecheck, 31 unit testa,
+  5/5 eval-a i build prošli.
+- Code commits: priprema `205b709`, K1 `8c52dd8`, K2 `675fd58`, K3 `cd76dfe`,
+  baseline `7586646`, evidence baseline `f9b9f07`, K5 `75635b3`, K5 evidence
+  `d2ee94c`, vizuelni sloj `531f4cc`.
+- Tag hash-evi: `baseline` = `7586646872d1b346b013b3d95067d1febd019ede`;
+  `after-fix` = `75635b31616a26b4db537faadf7d597aed9237ad`.
+- Vizuelna ručna provera i četiri obavezna screenshot-a ostaju nedovršeni zbog
+  nedostupnog browser-a u ovom agent okruženju. Ukupno proteklo Week 3 vreme
+  nije izmereno i zato se limit od 240 minuta ne potvrđuje.
+- Imena/doprinosi para još nisu dostavljeni.
