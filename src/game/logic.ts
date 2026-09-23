@@ -84,10 +84,24 @@ export function changeDirection(
   state: GameState,
   dir: Direction,
 ): GameState {
+  const head = state.snake[0];
+  const neck = state.snake[1];
+  let movementDirection = state.direction;
+
+  if (head !== undefined && neck !== undefined) {
+    const dx = head.x - neck.x;
+    const dy = head.y - neck.y;
+
+    if (dx === 1 && dy === 0) movementDirection = "right";
+    else if (dx === -1 && dy === 0) movementDirection = "left";
+    else if (dx === 0 && dy === 1) movementDirection = "down";
+    else if (dx === 0 && dy === -1) movementDirection = "up";
+  }
+
   if (
     state.status === "over" ||
     state.status === "won" ||
-    OPPOSITE_DIRECTIONS[state.direction] === dir
+    OPPOSITE_DIRECTIONS[movementDirection] === dir
   ) {
     return state;
   }
