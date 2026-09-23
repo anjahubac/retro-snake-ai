@@ -1,0 +1,13 @@
+
+> retro-snake-ai@1.0.0 eval
+> vitest run evals
+
+
+ RUN  v5.0.1 /Users/anjahubac/Projects/retro-snake-ai
+
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  13:19:53
+   Duration  68ms (transform 65%, import 19%, tests 10%, worker 5%)
+

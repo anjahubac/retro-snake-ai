@@ -20,39 +20,38 @@ igra sa logikom u čistim funkcijama, proverenom testovima i eval skupom.
 
 ## Izabrani problem i hipoteza
 
-Hipoteza za K5 je još neizvršena; E4 je stvarni baseline signal. Ne upisivati rezultat izmene pre njene provere.
-
 ```
-Tvrdnja:
-Signal:
-Hipoteza:
-Najmanja promena:
-Provera:
-Rezultat:
-Ograničenje:
+Tvrdnja: brzi smerovi up pa levo u istom tick-u mogu da okrenu zmiju u vrat.
+Signal: E4 pada; stvarni izlaz daje status `over`, očekivano je `running`.
+Hipoteza: changeDirection poredi novi smer sa poslednjim zadatim state.direction; posle up, levo nije više suprotno toj vrednosti, iako je zmija poslednji put fizički išla desno.
+Najmanja promena: izračunati fizički smer iz glave minus vrat (snake[0] - snake[1]) i odbiti smer suprotan tom pravcu; za nedostajući ili neodrediv vrat koristiti state.direction. Menja se samo src/game/logic.ts.
+Provera: npm run typecheck && npm test && npm run eval, sa istim E1–E5.
+Rezultat: `npm run typecheck && npm test && npm run eval` prolazi; 31 unit testa i 5/5 eval-a prolaze. E4 sada prolazi.
+Ograničenje: odbija se smer nazad u vrat; nema reda komandi, a druga dozvoljena komanda unutar tick-a i dalje može zameniti ranije zadati smer.
 ```
 
 ## Jedna kontrolisana promena
 
-- Fajl(ovi): 
-- Commit / tag: `after-fix` → `<hash>`
-- Diff: `git diff baseline after-fix -- src/`
+- Fajl(ovi): `src/game/logic.ts`
+- Commit: `75635b31616a26b4db537faadf7d597aed9237ad`
+- Tag: `after-fix` → `75635b31616a26b4db537faadf7d597aed9237ad`
+- Diff: `docs/runs/after-fix-diff.txt`; izmenjen je samo `src/game/logic.ts`. `git diff baseline after-fix -- tests/ evals/ src/game/types.ts` je prazan.
 
 ## Isti eval pre i posle
 
 | ID | Baseline | Posle |
 |---|---|---|
-| E1 | PASS | — |
-| E2 | PASS | — |
-| E3 | PASS | — |
-| E4 | FAIL: status `over`, očekivan `running` | — |
-| E5 | PASS | — |
+| E1 | PASS | PASS |
+| E2 | PASS | PASS |
+| E3 | PASS | PASS |
+| E4 | FAIL: status `over`, očekivan `running` | PASS |
+| E5 | PASS | PASS |
 
-Sirovi izlazi: `docs/runs/eval-baseline.txt`, `docs/runs/eval-after.txt`.
+Sirovi izlazi: `docs/runs/eval-baseline.txt`, `docs/runs/eval-after.txt`. After-fix diff: `docs/runs/after-fix-diff.txt`.
 
 ## Poznato ograničenje
 
-Baseline UI screenshot nedostaje jer browser okruženje nije bilo dostupno; automatizovan eval i server startup izlaz su sačuvani.
+Baseline UI screenshot i K3 interaktivna provera nedostaju jer browser okruženje nije bilo dostupno. Automatizovan eval i server startup izlaz su sačuvani. Popravka odbija smer koji vodi nazad u vrat; nema reda komandi, a druga dozvoljena komanda unutar tick-a i dalje može zameniti ranije zadati smer.
 
 ## Doprinos članova para
 

@@ -8,11 +8,11 @@ Sirovi izlazi: `docs/runs/eval-baseline.txt` i `docs/runs/eval-after.txt`.
 
 | ID | Ulaz ili scenario | Očekivanje | Baseline | Posle izmene | Status |
 |---|---|---|---|---|---|
-| E1 | Normalan start sa `DEFAULT_CONFIG`, Space, jedan tick | status `ready`, zmija dužine 3 sa glavom na (10,10), hrana nije na zmiji; posle tick-a glava na (11,10), status `running` | PASS | | Baseline PASS |
-| E2 | Tabla 10×10, glava na (9,5), smer desno, tick | status `over`, nijedan deo zmije van table | PASS | | Baseline PASS |
-| E3 | Nevalidan config `{ gridSize: -5, tickMs: "fast" }` | `validateConfig` odbija sa ≥ 2 greške; `loadConfig` vraća `DEFAULT_CONFIG` + greške | PASS | | Baseline PASS |
-| E4 | Zmija ide desno; u **istom** tick-u pritisnuti gore pa levo | zmija se ne okreće u sopstveni vrat: posle tick-a status `running`, glava na (10,9) | FAIL: status je `over`, očekivan `running` (`evals/evals.test.ts:49`) | | Baseline FAIL |
-| E5 | Tabla puna osim polja (9,9); stvaranje hrane | hrana je na (9,9), nikad na zmiji | PASS | | Baseline PASS |
+| E1 | Normalan start sa `DEFAULT_CONFIG`, Space, jedan tick | status `ready`, zmija dužine 3 sa glavom na (10,10), hrana nije na zmiji; posle tick-a glava na (11,10), status `running` | PASS | PASS | PASS baseline i after-fix |
+| E2 | Tabla 10×10, glava na (9,5), smer desno, tick | status `over`, nijedan deo zmije van table | PASS | PASS | PASS baseline i after-fix |
+| E3 | Nevalidan config `{ gridSize: -5, tickMs: "fast" }` | `validateConfig` odbija sa ≥ 2 greške; `loadConfig` vraća `DEFAULT_CONFIG` + greške | PASS | PASS | PASS baseline i after-fix |
+| E4 | Zmija ide desno; u **istom** tick-u pritisnuti gore pa levo | zmija se ne okreće u sopstveni vrat: posle tick-a status `running`, glava na (10,9) | FAIL: status `over`, očekivan `running` (`evals/evals.test.ts:49`) | PASS | FAIL baseline; PASS after-fix |
+| E5 | Tabla puna osim polja (9,9); stvaranje hrane | hrana je na (9,9), nikad na zmiji | PASS | PASS | PASS baseline i after-fix |
 
 Predviđanje pre pokretanja: E4 je kandidat za stvaran problem baseline-a
 (poznata greška brzog dvostrukog pritiska). Ako E4 prođe na baseline-u, to se
