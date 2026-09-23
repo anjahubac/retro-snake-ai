@@ -1,0 +1,35 @@
+
+> retro-snake-ai@1.0.0 eval
+> vitest run evals
+
+
+ RUN  v5.0.1 /Users/anjahubac/Projects/retro-snake-ai
+
+ ❯ evals/evals.test.ts (5 tests | 1 failed) 4ms
+   ❯ EVALS (5)
+     × E4 dva brza pritiska u jednom tick-u ne okreću zmiju u vrat 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  evals/evals.test.ts > EVALS > E4 dva brza pritiska u jednom tick-u ne okreću zmiju u vrat
+AssertionError: expected 'over' to be 'running' // Object.is equality
+
+Expected: "running"
+Received: "over"
+
+ ❯ evals/evals.test.ts:49:23
+     47|     s = changeDirection(s, "left");
+     48|     const s1 = tick(s, rng);
+     49|     expect(s1.status).toBe("running");
+       |                       ^
+     50|     expect(s1.snake[0]).toEqual({ x: 10, y: 9 });
+     51|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  13:17:02
+   Duration  87ms (transform 60%, import 17%, tests 17%, worker 5%)
+

@@ -1,0 +1,17 @@
+
+> retro-snake-ai@1.0.0 typecheck
+> tsc --noEmit
+
+
+> retro-snake-ai@1.0.0 test
+> vitest run tests
+
+
+ RUN  v5.0.1 /Users/anjahubac/Projects/retro-snake-ai
+
+
+ Test Files  2 passed (2)
+      Tests  31 passed (31)
+   Start at  13:16:40
+   Duration  83ms (transform 60%, import 23%, tests 10%, worker 6%)
+
