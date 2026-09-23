@@ -121,6 +121,78 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
+#hint-panel {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid var(--grid);
+  background: var(--panel-bg);
+}
+
+#hint-heading,
+#hint-label,
+#hint,
+.hint-explanation,
+.hint-continuation {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+#hint-heading {
+  color: var(--text);
+  font-size: 20px;
+}
+
+#hint-btn {
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 0;
+  color: var(--page-bg);
+  background: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+#hint-btn:disabled {
+  cursor: wait;
+}
+
+#ai-mode,
+#hint-label,
+.hint-explanation,
+.hint-continuation {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+#hint {
+  min-width: 0;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#hint-panel[data-state="success"] {
+  border-color: var(--success);
+}
+
+#hint-panel[data-state="success"] #hint-label {
+  color: var(--success);
+}
+
+#hint-panel[data-state="error"] {
+  border-color: var(--error);
+}
+
+#hint-panel[data-state="error"] #hint-label {
+  color: var(--error);
+}
+
 @media (max-width: 480px) {
   main {
     padding: 16px 12px;
