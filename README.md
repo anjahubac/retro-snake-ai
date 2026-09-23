@@ -12,7 +12,7 @@ npm run dev
 ```
 
 Kontrole: strelice ili W/A/S/D menjaju smer; Space pokreće, pauzira/nastavlja,
-a posle kraja priprema novu partiju. Taster Space van AI dugmeta nastavlja igru.
+a posle kraja priprema novu partiju.
 
 `GameConfig` se učitava preko `?config=<JSON>`, na primer:
 
@@ -22,17 +22,18 @@ a posle kraja priprema novu partiju. Taster Space van AI dugmeta nastavlja igru.
 
 Nevalidan config prikazuje bezbednu poruku i koristi podrazumevanu konfiguraciju.
 
-## AI Hint (lokalni fake)
+## Režimi igre
 
-Dugme **Ask AI for Hint** koristi samo deterministički lokalni fake klijent.
-Podržani demo režimi su `success`, `invalid_args`, `unsupported_tool`,
-`timeout`, `provider_error` i `malformed_final`, preko `?ai=<mode>`. Nepoznat
-ili odsutan režim koristi `success`. Primer: `/?ai=timeout`.
+Classic je podrazumevani režim i završava se na `winScore` poena. Arcade
+ubrzava igru na svakih pet poena i završava se sudarom ili kad se popuni tabla.
+Režim možeš izabrati u interfejsu ili početnim URL parametrom `?mode=arcade`;
+nepoznat režim koristi Classic.
 
-Igra se pauzira pre zahteva samo ako je status `running`; savet se prikazuje kao
-tekst i nikada se ne izvršava. **Core put koristi lokalni fake klijent; live
-provider nije testiran.** Nema live poziva, API ključa u browser-u ili mrežnog
-AI zahteva.
+## AI savet
+
+AI savet je privremeno uklonjen iz interfejsa. Povratak je planiran za
+28.09–04.10.2026. Fake klijent, validatori, alati i testovi ostaju u projektu;
+`?ai=` trenutno nema uticaja.
 
 ## Provere
 
@@ -43,7 +44,7 @@ npm run eval
 npm run build
 ```
 
-`npm test` pokreće game i AI unit testove, `npm run eval` pokreće E1–E5.
+`npm test` pokreće game i postojeće AI unit testove, `npm run eval` pokreće E1–E5.
 
 ## Dokazi i kontekst
 

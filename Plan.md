@@ -1,6 +1,116 @@
 # Plan implementacije — Pixel Zmija
 
- Ovaj dokument je plan, nije izveštaj o izvršenoj implementaciji. Pri pisanju plana projekat sadrži dokumentaciju i instrukcije, ali nema aplikaciju, instalirane projektne pakete, izvršive testove ni Git repozitorijum.
+## Aktivna revizija — 2026-09-23
+
+Ovaj deo zamenjuje ranije vremenske pretpostavke. Izvorni plan A/B ispod
+ostaje referenca za prvobitnu implementaciju i testove; nije lista poslova
+koje treba ponovo izvršiti. Aktivni zadaci R0–R4 su u
+[`docs/IMPLEMENTATION_STEPS.md`](docs/IMPLEMENTATION_STEPS.md#revizija-r--aktivni-zadaci).
+
+### Nalazi pregleda
+
+- Aplikacija, game logika, testovi i AI moduli već postoje. Ranija tvrdnja da
+  repo ima samo dokumentaciju više ne opisuje sadašnje stanje.
+- `index.html` već prikazuje AI panel, a `src/main.ts` zahteva njegove DOM
+  elemente i povezuje lokalni fake klijent. Brisanje samo HTML-a ruši startup.
+- Log beleži 72 unit testa i pet eval-a pri ranijoj implementaciji. To je
+  istorijski rezultat, ne novo izvršavanje tokom ove revizije. Browser provere
+  i screenshot-i u evidenciji još nisu potvrđeni.
+- Postojeći spec isključuje nivoe, prepreke, bonuse i čuvanje rekorda.
+  Predlozi ispod prvo zahtevaju svoj specifikacioni korak; nisu odobrena
+  promena postojećih pravila ili testova.
+
+### Odluke i redosled
+
+| Zadatak | Status / termin | Ishod |
+|---|---|---|
+| R0 — revizija plana i instrukcija | Ova dokumentaciona iteracija | Stvarno stanje, predlozi i izvršivi zadatak za AI panel |
+| R1 — privremeno uklanjanje AI sekcije | Implementirano i provereno | AI moduli/testovi sačuvani; sekcija ostaje isključena do sledeće nedelje |
+| R2 — Arcade nivoi i ubrzavanje | Specifikovano i implementirano; 85 unit testa i 5 eval-a prolaze | Classic ostaje isti; Arcade dobija nivoe, ubrzanje i pobedu na punoj tabli |
+| R3 — savremeniji izgled | Implementiran; browser review čeka mogućnost pokretanja lokalnog servera | Responsivan raspored, nova paleta, izbor režima i vidljiv Arcade nivo |
+| R4 — AI savet | Planiran za 28.09–04.10.2026. | Povratak postojeće fake osnove, integracija i provera |
+
+Na korisnički ispravak, AI panel ostaje privremeno uklonjen do planiranog rada
+28.09–04.10.2026. R2 i R3 su već implementirani.
+
+### Preporuka za kompleksnost: nivo + tempo, pa prepreke
+
+Preporučeni prvi paket je **Classic + Arcade sa nivoima i ubrzavanjem**.
+Classic čuva sadašnjih +1 poen, pobedu na `winScore` i fiksni tempo. Arcade
+daje vidljiv napredak i sve teži izazov uz mali početni skup novih pravila.
+
+| Prioritet | Predlog | Doprinos igri | Obim i zavisnosti |
+|---|---|---|---|
+| 1 | Arcade nivoi i postepeno ubrzavanje | Svakih 5 običnih hrana novi nivo; igrač planira put pod većim pritiskom | Srednji: pravila nivoa, tempo, UI, reset i testovi |
+| 2 | Unapred definisane arene sa preprekama | Put do hrane zahteva izbor rute | Veći: sudari, dostupna polja hrane, validacija mape i AI `danger` |
+| 3 | Bonus hrana ograničenog trajanja | Izbor između bezbedne rute i dodatnih poena | Veći: odvojeni poeni i progres, trajanje u tick-ovima, pauza i spawn |
+| 4 | Lokalni rekord po režimu | Razlog za novu partiju | Mali/srednji: adapter za localStorage, validacija i fallback pri zabrani storage-a |
+
+Početni predlog za Arcade: nivo `1 + floor(običnaHrana / 5)`, interval
+`max(70, početniTickMs - 10 * (nivo - 1))`, bez pobede na 15 poena;
+igra se do sudara ili popunjene table. Brojeve tretirati kao početnu hipotezu
+za balans, proveriti spor i brz početni tempo i definisati validan Arcade
+opseg pre implementacije. `score` i broj pojedenih običnih hrana moraju biti
+različiti pojmovi ako se kasnije dodaju bonusi.
+
+Prepreke bih prvo uvela kao odabranu statičnu arenu na početku partije.
+Tako prepreka ne može iznenada nastati na zmiji ili preseći tekuću putanju.
+Treba proveriti početni slobodan koridor i povezane prolaze; dostupna hrana
+ne znači garanciju da zmija nikada neće sama sebi zatvoriti put.
+
+Bonus za kasniju iteraciju: zasebna zlatna hrana, dodatni poeni i trajanje
+mereno aktivnim tick-ovima. Pauza zamrzava trajanje. R2 mora precizirati
+učestalost, vrednost, rast, kolizije i slučaj bez slobodnog polja.
+Portali, pokretni neprijatelji i više istovremenih power-up-ova ostaju za
+kasnije: prvo treba izbalansirati tempo i arene.
+
+### Vizuelni predlog: savremena arkada sa pixel identitetom
+
+- **Raspored:** centrirana tabla kao glavni element; na desktopu okvir do
+  približno 960 px sa kompaktnim bočnim karticama za status i kontrole.
+  Na širini 360 px sve ide u jednu kolonu bez horizontalnog skrola.
+- **Paleta:** skoro crna `#0B1018`, površine `#151E2B`, glavni tekst
+  `#F3F7FC`, sekundarni `#A6B4C8`, mint zmija `#6EE7B7`, koralna hrana
+  `#FB7185`, ljubičasti UI akcent `#A78BFA`. Boje su predlog; kontrast
+  proveriti na stvarnim kombinacijama pre prihvatanja.
+- **Tipografija:** sistemski sans-serif za naslove i uputstva, monospace i
+  tabularne cifre za poene. Bez preuzimanja fontova ili slika.
+- **Tabla:** diskretnija mreža, oštri pixel segmenti i oči koje pokazuju
+  smer; zaobljen spoljašnji okvir i blaga senka daju moderan okvir igri.
+  Logička mreža i `CELL = 20` ostaju odvojeni od CSS veličine i DPR bitmap-a.
+- **Informacije:** sada poeni i status; nivo, progres do sledećeg nivoa i
+  rekord prikazivati tek kada odgovarajuće funkcije postoje. Bez izmišljenih
+  brojeva ili neaktivnih selektora režima.
+- **Kontrole i stanja:** čitljive oznake tastera, jasni start/pauza/kraj
+  overlay-i. Vidljiva Start/Pauza/Nova partija dugmad i touch upravljanje
+  su zasebni funkcionalni predlozi, nisu deo čiste vizuelne izmene R3.
+- **Pristupačnost:** vidljiv fokus, tekstualni status pored boje, DOM opis
+  table, kontrast običnog teksta najmanje 4.5:1. Za buduća dugmad ciljati
+  najmanje 44 × 44 CSS px kao projektni izbor. Dekorativni motion ostaviti
+  za kasniju odluku; sačuvati postojeći `prefers-reduced-motion` tretman.
+
+Osnova pristupačnosti: [W3C — kontrast teksta](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
+i [W3C — veličina kontrola](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html).
+Ovo su smernice za predlog, ne potvrda vizuelnog testa ili pune pristupačnosti.
+
+### Granice ove revizije
+
+Menjaju se plan, rutiranje i fazna dokumentacija. Kod aplikacije, postojeći
+testovi, ugovor alata, raniji promptovi, log i sirova evidencija ostaju
+istorijski izvori. Zahtev korisnika za ovu reviziju zamenjuje raniju zabranu
+izmene instrukcionih fajlova za R0; ne daje narednim zadacima opštu dozvolu
+za menjanje svih dokumenata. Budžet proširenja proceniti zasebno; raniji
+četvoročasovni plan nije procena za novu mehaniku.
+
+---
+
+## Izvorni plan A/B — istorijska referenca
+
+Pri prvom pisanju plana projekat je sadržao dokumentaciju i instrukcije,
+bez aplikacije. Tvrdnje o „ovoj nedelji“, dozvoljenim izmenama i stanju
+implementacije u nastavku odnose se na taj trenutak; aktivna revizija iznad
+i zadaci R imaju prednost za novi rad. Spec i ugovor i dalje određuju
+ponašanje igre; predlog sam po sebi ne menja njihove ugovore.
 
 ## Pregled i zaključane odluke
 

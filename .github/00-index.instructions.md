@@ -27,6 +27,11 @@ nije bolji kontekst: čitaj samo ono što tabela ispod navodi.
 
 | Zadatak | Prvo pročitaj | Obično još |
 |---|---|---|
+| Revizija plana / instrukcija (R0) | Tok rada | Komande |
+| Privremeno uklanjanje AI UI-ja (R1) | Arhitektura | Bezbednost |
+| Specifikacija nove mehanike (R2) | Arhitektura | Testiranje |
+| Vizuelno osavremenjivanje (R3) | Arhitektura | Bezbednost |
+| Povratak AI saveta (R4) | Bezbednost | Arhitektura, testiranje |
 | GameConfig / validacija (Korak 1) | Arhitektura | Testiranje |
 | Pravilo igre, `tick`, sudar, hrana (Korak 2) | Arhitektura | Testiranje |
 | Canvas, tastatura, `main.ts` (Korak 3) | Arhitektura | Bezbednost (samo `textContent`) |
@@ -39,7 +44,10 @@ nije bolji kontekst: čitaj samo ono što tabela ispod navodi.
 | Commit ili predaja | Tok rada | — |
 
 Uz module, agent uvek dobija `docs/GAME_SPEC.md` i tekući korak; u Koracima 6–9
-i `docs/TOOL_CONTRACT.md`. Zašto baš to: `docs/CONTEXT_MANIFEST.md`.
+i R4 i `docs/TOOL_CONTRACT.md`. Zatvorena lista „Kontekst“ aktivnog zadatka
+određuje koji se moduli stvarno čitaju. R0–R4 su u vrhu
+`docs/IMPLEMENTATION_STEPS.md`; ideje i prioriteti u aktivnoj reviziji
+`Plan.md`. Zašto baš to: `docs/CONTEXT_MANIFEST.md`.
 
 ## Osnova repozitorijuma
 

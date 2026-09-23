@@ -218,7 +218,6 @@ function drawOverlay(
 export function render(ctx: CanvasRenderingContext2D, state: GameState): void {
   const logicalEdge = state.config.gridSize * CELL;
   const canvas = ctx.canvas;
-  canvas.style.width = `${logicalEdge}px`;
 
   const cssEdge = canvas.getBoundingClientRect().width;
   if (!(cssEdge > 0)) return;

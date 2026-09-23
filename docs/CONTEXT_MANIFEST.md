@@ -3,10 +3,15 @@
 Coding agent u svakom koraku dobija **samo** fajlove iz sekcije „Kontekst“ tog
 koraka u `IMPLEMENTATION_STEPS.md`. Ova tabela objašnjava zašto.
 
+Za novi rad prvo se bira aktivni R zadatak na početku tog dokumenta.
+Aktivna revizija `Plan.md` daje prioritete i predloge; stari A/B koraci se
+čitaju samo kada ih tekući zadatak navodi. Rokovi u starom planu nisu
+aktivni raspored. R0 je dokumentacioni pregled, bez implementacije R1–R4.
+
 | Izvor | Uključen? | Zašto? | Prioritet | Rizik |
 |---|---|---|---|---|
 | `docs/GAME_SPEC.md` | Da, uvek | Pravila, scope, DoD | 2 (posle zahteva korisnika) | Nizak |
-| `docs/TOOL_CONTRACT.md` | Da, samo koraci 6–9 | Granica AI alata | 3 | Nizak |
+| `docs/TOOL_CONTRACT.md` | Da, koraci 6–9 i R4; novi game zadatak samo ako navodi izmenu AI ugovora | Granica AI alata | 3 | Nizak |
 | `docs/IMPLEMENTATION_STEPS.md` (samo tekući korak) | Da | Šta se radi sada, dozvoljeni fajlovi, testovi | 4 | Srednji: agent može da pređe na sledeći korak; zato samo tekući |
 | Postojeći kod iz „Dozvoljeni fajlovi“ i fajlovi koje oni importuju | Da | Da agent ne izmisli API | 7 | Nizak |
 | `.github/copilot-instructions.md` | Da, uvek | Kratka pravila koja uvek važe | 6 | Nizak |
@@ -32,7 +37,8 @@ repoi, generisani fajlovi i tajne. Razlog je u tabeli.
 **Koji izvor ima prioritet kad se razlikuju?**
 zahtev korisnika > `GAME_SPEC.md` > `TOOL_CONTRACT.md` > tekući korak >
 numerisani modul > `copilot-instructions.md` > postojeći kod (isto kao u `.github/copilot-instructions.md`).
-Ako agent primeti konflikt, staje i prijavljuje ga umesto da bira sam.
+Izričita korisnička revizija važi u svom scope-u; već odobrena odluka se ne
+traži ponovo. Nerešen konflikt se prijavljuje pre zavisne izmene.
 
 ## Eksperiment (Stretch, opciono)
 
@@ -42,6 +48,13 @@ preskočene provere i rezultat izlazne komande. Upis u `AI_USAGE_LOG.md`.
 
 
 ## Kontekst planiranja
+
+Revizija R0 od 2026-09-23 koristi lokalni plan, korake/spec, rutiranje, M3/M5,
+manifest, postojeću evidenciju i UI izvorne fajlove za pregled stvarnog
+stanja. Nisu potrebni stari PDF, privatni fajlovi ili ponovno čitanje svih
+modula. Javne W3C smernice služe za predlog pristupačnosti u `Plan.md`,
+ne kao dokaz testiranja aplikacije. Ovo je poseban planerski kontekst;
+R1 i naredni zadaci koriste samo svoje zatvorene liste.
 
 Planiranje je koristilo zadati izazov/PDF i sva tada postojeća projektna
 Markdown dokumenta, zatim traženi primer generičkih instructions. Ovaj široki

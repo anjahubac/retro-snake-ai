@@ -1,4 +1,4 @@
-import type { Direction, GameConfig, GameState, Point, Rng } from "./types";
+import type { Direction, GameConfig, GameMode, GameState, Point, Rng } from "./types";
 
 const DIRECTIONS: Readonly<Record<Direction, Point>> = {
   up: { x: 0, y: -1 },
@@ -44,6 +44,7 @@ export function spawnFood(
 export function createInitialState(
   config: GameConfig,
   rng: Rng,
+  mode: GameMode = "classic",
 ): GameState {
   const center = Math.floor(config.gridSize / 2);
   const snake: Point[] = Array.from(
@@ -53,12 +54,26 @@ export function createInitialState(
 
   return {
     config,
+    mode,
     snake,
     direction: "right",
     food: spawnFood(snake, config.gridSize, rng),
     score: 0,
     status: "ready",
   };
+}
+
+export function getLevel(score: number): number {
+  return Math.floor(score / 5) + 1;
+}
+
+export function getTickMs(
+  config: GameConfig,
+  mode: GameMode,
+  score: number,
+): number {
+  if (mode === "classic") return config.tickMs;
+  return Math.max(60, config.tickMs - 10 * (getLevel(score) - 1));
 }
 
 export function startGame(state: GameState): GameState {
@@ -143,7 +158,7 @@ export function tick(state: GameState, rng: Rng): GameState {
     const snake = [nextHead, ...state.snake];
     const score = state.score + 1;
 
-    if (score >= winScore) {
+    if (state.mode === "classic" && score >= winScore) {
       return { ...state, snake, score, status: "won" };
     }
 
@@ -172,5 +187,5 @@ export function handleSpace(state: GameState, rng: Rng): GameState {
     return togglePause(state);
   }
 
-  return createInitialState(state.config, rng);
+  return createInitialState(state.config, rng, state.mode);
 }

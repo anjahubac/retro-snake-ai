@@ -7,12 +7,20 @@ applyTo: '**/*'
 
 ## Jedan korak = jedna AI iteracija
 
-1. Korisnik zadaje broj koraka iz `docs/IMPLEMENTATION_STEPS.md`.
+1. Pronađi zadatak koji odgovara korisničkom zahtevu u
+   `docs/IMPLEMENTATION_STEPS.md`; za novi rad prvo proveri aktivne R zadatke.
+   Korisnik može zadati broj ili opis posla. Predloge ne izvršavaj automatski.
 2. Agent čita samo „Kontekst“ tog koraka i module iz `00-index`.
 3. Agent sažme zadatak, da plan i nejasnoće, pa tek onda menja kod.
 4. Agent pokreće izlaznu komandu i lepi stvarni izlaz.
 5. Korisnik sam ponovo pokreće izlaznu komandu, upisuje red u
    `docs/AI_USAGE_LOG.md` i pravi commit.
+
+Revizija plana je zaseban dokumentacioni korak: beleži provereno trenutno
+stanje, odvojeno označava predlog, planiran zadatak i izvršen zadatak. Kreiranje
+taska nije njegovo izvršavanje. Relativne rokove zapiši i kao datumski opseg.
+Za novu mehaniku prvo uskladi spec i kriterijume, pa napravi odvojene korake
+za implementaciju. Postojeće testove ne slabiti da bi nova funkcija prošla.
 
 ## Git
 
@@ -47,5 +55,5 @@ Dokaz je <test, rezultat ili snimak bez tajni>.
 Moje pitanje je <precizno pitanje>.
 ```
 
-Vrati se na poslednje zeleno stanje (`git stash` ili `git checkout -- <fajl>`)
-pre novog AI pokušaja.
+Sačuvaj postojeće izmene i prijavi bloker pre novog pokušaja. Ne radi
+automatski stash, reset ili checkout preko korisničkog rada.

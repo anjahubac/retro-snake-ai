@@ -1,7 +1,20 @@
 # GAME_SPEC — Pixel Zmija
 
-Status: **zaključano 2026-09-23.** Izmena ovog fajla se upisuje u `AI_USAGE_LOG.md`
-sa razlogom. Ovaj fajl ima najveći prioritet kad se izvori razlikuju.
+Status: **osnovna pravila zaključana 2026-09-23; fazni raspored revidiran istog dana.**
+Izmena ovog fajla se upisuje u `AI_USAGE_LOG.md` sa razlogom; ručni upis za R0:
+„Na zahtev korisnika definisani privremeno uklanjanje AI UI-ja i termin povratka;
+pravila igre nisu menjana.“ Prioritet je iza izričitog zahteva korisnika.
+
+## Fazna dopuna — revizija R
+
+Task R1 iz `IMPLEMENTATION_STEPS.md` privremeno uklanja „AI savet“ iz UI-ja i
+isključuje njegovu aplikacionu integraciju, uz sačuvane AI module i testove.
+R1 je implementiran; AI panel je uklonjen i ostaje van UI-ja do planiranog
+R4 u periodu 28.09–04.10.2026. AI moduli i testovi ostaju u projektu.
+
+Arcade nivoi i ubrzavanje su usvojeni u R2 ispod. Prepreke, bonus hrana i
+rekord ostaju van scope-a dok zasebna specifikaciona revizija ne usvoji
+konkretan paket. Novi vizuelni pravac je R3.
 
 ## Naziv
 
@@ -11,9 +24,9 @@ Pixel Zmija (Snake-inspired). Bez originalnih asseta, muzike, naziva ili loga.
 
 Igrač upravlja zmijom koja se kreće po kvadratnoj mreži, jedno polje po tick-u.
 Zmija jede hranu, za svaku hranu dobija poen i postaje duža za jedno polje.
-Partija se gubi udarcem u zid ili u sopstveno telo, a dobija kad poeni dostignu
-`winScore`. Dugme „Ask AI for Hint“ traži kratak savet koji AI daje na osnovu
-read-only snimka stanja igre.
+Partija se gubi udarcem u zid ili u sopstveno telo. Classic se dobija kad
+poeni dostignu `winScore`; Arcade kad se popuni tabla. Dugme „Ask AI for Hint“
+(kad je uključeno u fazi R4) traži savet na osnovu read-only snimka stanja.
 
 ## Cilj igrača i kontrole
 
@@ -23,7 +36,8 @@ Cilj: skupiti `winScore` poena bez sudara.
 |---|---|
 | Strelice ili W A S D | promena smera |
 | Space | start / pauza / nastavak / nova partija posle kraja |
-| Klik na „Ask AI for Hint“ | pauzira igru i traži savet |
+| Select režima | započinje novu Classic ili Arcade partiju |
+| Klik na „Ask AI for Hint“ (R4) | pauzira igru i traži savet |
 
 ## Osnovni game loop
 
@@ -38,8 +52,32 @@ Tick se izvršava svakih `tickMs` milisekundi. Tick menja stanje **samo** u `run
 
 ## Win / lose
 
-- **Win:** `score >= winScore` → status `won`.
+- **Classic win:** `score >= winScore` → status `won`.
+- **Arcade win:** tabla puna, nema slobodnog polja za hranu → `won`.
 - **Lose:** glava bi izašla van table ili ušla u telo → status `over`.
+
+## Režimi (revizija R2)
+
+- Režim je `classic` ili `arcade`; default je Classic. `?mode=classic` i
+  `?mode=arcade` biraju početni režim; nepoznata vrednost bira Classic.
+  Vidljivi select omogućava promenu i započinje novu `ready` partiju.
+- Režim je deo `GameState`, a ne `GameConfig`. Četiri postojeća `GameConfig`
+  polja i njihova URL validacija ostaju nepromenjeni.
+- Classic zadržava sadašnje ponašanje.
+- Arcade koristi istu tablu, početnu dužinu i pravilo hrane. Svaka hrana
+  dodaje jedan poen i segment. `level = 1 + floor(score / 5)`. Ne završava
+  se na `winScore`; sudar je poraz, puna tabla pobeda.
+- Arcade interval je `max(60, config.tickMs - 10 * (level - 1))`.
+  Classic koristi `config.tickMs`. Nivo se računa iz score-a.
+- Pauza zaustavlja napredovanje. Promena tempa ne dodaje niti preskače tick.
+  Restart čuva režim i resetuje score i tempo.
+
+## AI savet (R4, sledeća nedelja)
+
+Kad se vrati, AI savet koristi jedan read-only alat `get_game_state` iz
+`TOOL_CONTRACT.md`. Trenutno nema AI kontrole u interfejsu niti poziva iz
+aplikacije. Sačuvani moduli i testovi su osnova za tu iteraciju; nema live
+provider-a.
 
 ## Ključna pravila
 
@@ -92,7 +130,7 @@ AI daje savet, igra ostaje jedini autoritet nad stanjem.
 - multiplayer, login, korisnički nalozi, online leaderboard
 - backend, baza, deployment
 - zvuk i muzika, animacije osim pomeranja
-- više nivoa, prepreke, power-up-ovi, procedural generation
+- prepreke, power-up-ovi, bonus hrana, procedural generation
 - AI-controlled protivnik, AI koji sam igra
 - mobilne kontrole (touch)
 - čuvanje rekorda (ni localStorage)
@@ -105,8 +143,9 @@ AI daje savet, igra ostaje jedini autoritet nad stanjem.
 - [ ] `npm run eval` pokrenut na baseline-u i posle promene; izlaz sačuvan u
       `docs/runs/`, rezultati upisani u `EVALS.md`
 - [ ] `npm run build` prolazi
-- [ ] Ručna provera iz Koraka 3 u `IMPLEMENTATION_STEPS.md` je prošla
+- [ ] Classic i Arcade ručne provere iz revizije R u `IMPLEMENTATION_STEPS.md`
+      su prošle
 - [ ] `?config={"gridSize":-5}` prikazuje poruku, a igra radi sa podrazumevanom konfiguracijom
-- [ ] „Ask AI for Hint“ prikazuje validan savet (fake klijent); `?ai=timeout`
-      prikazuje bezbednu poruku
+- [ ] Po završetku R4: „Ask AI for Hint“ prikazuje validan savet (fake klijent);
+      `?ai=timeout` prikazuje bezbednu poruku
 - [ ] `git grep -i -e "sk-ant" -e "api_key="` ne vraća ništa

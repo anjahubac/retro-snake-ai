@@ -16,11 +16,16 @@ otvori samo module koje navodi `.github/00-index.instructions.md` ili sekcija
 6. Ovaj fajl.
 7. Postojeći kod.
 
-Ako se izvori razlikuju, stani i prijavi konflikt; ne biraj sam.
+Izričita korisnička revizija menja samo navedeni scope. Primeni već odobrenu
+odluku i uskladi dokumente u dozvoljenom koraku; ne traži ponovo odobrenje.
+Za preostali nerešeni konflikt prijavi tačnu razliku pre zavisne izmene.
 
 ## Pravila koja uvek važe
 
 - Radiš **jedan** korak. Ne prelaziš na sledeći.
+- Aktivni zadatak i njegov status traži na početku
+  `docs/IMPLEMENTATION_STEPS.md`. `Plan.md` daje prioritete i predloge;
+  istorijski koraci se ne ponavljaju, a predlog nije nalog za implementaciju.
 - Pre izmene:
   1. Sažmi razumevanje zadatka.
   2. Navedi plan u nekoliko koraka.
@@ -50,3 +55,5 @@ Ako se izvori razlikuju, stani i prijavi konflikt; ne biraj sam.
 ## Minimum za „gotovo“
 
 Izlazna komanda koraka prolazi, a njen stvarni izlaz je nalepljen u odgovor.
+Za dokumentacioni korak dovoljne su propisane provere dokumentacije; ne
+tvrditi da su aplikacioni testovi ili browser provera izvršeni ako nisu.

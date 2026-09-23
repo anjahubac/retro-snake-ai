@@ -1,5 +1,214 @@
 # IMPLEMENTATION_STEPS — Pixel Zmija
 
+## Revizija R — aktivni zadaci
+
+Ažurirano 2026-09-23. `Plan.md`, sekcija „Aktivna revizija“, sadrži pregled
+stanja i predloge. R zadaci imaju nezavisne ID-jeve; ne menjaju originalne
+K0–K11 testove i potpise ispod. R0 je završen; R1 je implementiran i
+automatizovane provere su prošle (browser review nije izvršen); R2 je
+specifikovan i implementiran kroz R5/R6; R3 je implementiran; R4 ostaje
+planiran za 28.09–04.10.2026. AI panel trenutno nije u aplikaciji.
+
+Zajednički kontekst R zadataka: `AGENTS.md`,
+`.github/copilot-instructions.md`, `.github/00-index.instructions.md`,
+`docs/GAME_SPEC.md`, aktivni zadatak i aktivna revizija `Plan.md`.
+M1–M5 označavaju numerisane module iz indeksa; čitaju se samo moduli
+navedeni u zadatku. Istorijski promptovi/evidence se ne prepisuju.
+
+### R0 — Revizija plana i instrukcija
+
+**Scope:** isključivo dokumentacija, po zahtevu korisnika od 2026-09-23.
+**Kontekst:** zajednički; M3, M5; manifest i evidencija za utvrđivanje stanja;
+`package.json`, `index.html`, `src/main.ts`, `src/style.css`, `src/render.ts`
+kao read-only izvor stvarne implementacije.
+**Dozvoljeni fajlovi:** `Plan.md`, `AGENTS.md`,
+`.github/copilot-instructions.md`, `.github/00-index.instructions.md`,
+`.github/instructions/03-workflow.instructions.md`,
+`docs/IMPLEMENTATION_STEPS.md`, `docs/GAME_SPEC.md`, `docs/CONTEXT_MANIFEST.md`.
+
+**Prihvatanje:** označeno stvarno stanje; nove ideje su predlozi; R1 ima
+scope, kriterijume i proveru; R4 ima datum i uslove povratka; instrukcije
+usmeravaju na aktivni zadatak. Spec dobija samo faznu dopunu, bez novih
+game pravila. Log i izveštaji o starim testovima ostaju neizmenjeni.
+
+**Izlazna komanda:** `git diff --check`.
+**Pregled:** proveriti lokalne linkove, usklađenost statusa i rokova i diff;
+nema izmena u `src/`, `tests/`, `evals/` ili zavisnostima. Nema potrebe za
+novim aplikacionim testovima u dokumentacionom koraku.
+
+### R1 — Privremeno ukloni sekciju „AI savet“
+
+**Status:** implementirano; typecheck, 72 unit testa, 5 eval-a i build su
+prošli. Browser review nije izvršen: lokalni server nije mogao da se pokrene
+u sandbox-u (`listen EPERM`).
+**Procena:** 30–45 minuta sa proverama.
+**Kontekst:** zajednički; M1, M4; `index.html`, `src/main.ts`, `src/style.css`,
+`README.md`; postojeći importi iz `src/main.ts` samo radi razumevanja veza.
+**Dozvoljeni fajlovi:** `index.html`, `src/main.ts`, `src/style.css`, `README.md`.
+
+**Rad:**
+1. Ukloni ceo `#hint-panel`, uključujući naslov, dugme, fake oznaku, hint
+   live region i prateća uputstva. Ne ostavljaj praznu karticu ili najavu.
+2. U `src/main.ts` ukloni AI importe, obavezne upite za AI DOM elemente,
+   kreiranje fake klijenta, obradu `?ai=`, click handler, `hintPending` i
+   njegovu blokadu game input-a. Ukloni import `togglePause` ako više nije
+   korišćen. Sačuvaj standardnu Space pauzu kroz `handleSpace`.
+3. Ukloni samo CSS selektore namenjene AI panelu; sačuvaj opšte stilove
+   fokusa i pristupačnosti. Ne redizajniraj tablu u ovom koraku.
+4. U README navedi da je AI UI privremeno uklonjen i da je nastavak planiran
+   za 28.09–04.10.2026; fake modul i testovi ostaju u projektu. Dotadašnji
+   URL primeri ne smeju obećavati da sada prikazuju savet.
+
+**Kriterijumi prihvatanja:**
+- [ ] Nema AI panela, njegovog teksta, praznog razmaka ili fokusabilnog dugmeta.
+- [ ] Startup radi bez AI elemenata; konzola nema grešku `requireElement`.
+- [ ] Start, smerovi, pauza/nastavak, sudari i nova partija i dalje rade.
+- [ ] `/`, `/?ai=success`, `/?ai=timeout`, `/?ai=unsupported_tool` i
+      `/?ai=bilo-sta` prikazuju istu igru bez AI; parametar je neaktivan.
+- [ ] Nevalidan `?config` i dalje prikazuje fallback poruku i omogućava igru.
+- [ ] Nema produkcionog poziva `requestHint` iz aplikacije ni AI čekanja.
+- [ ] `src/ai/`, game logika, svi postojeći testovi i ugovor alata sačuvani.
+- [ ] Raspored i tastatura provereni u browser-u na 360 px i desktopu;
+      ako browser provera nije izvršena, to je jasno označeno kao preostalo.
+
+**Izlazna komanda:**
+`npm run typecheck && npm test && npm run eval && npm run build`.
+Nema novih paketa ili test framework-a. Postojeći AI testovi ostaju aktivni.
+R1 se ne označava završenim samo na osnovu uklonjenog HTML-a.
+
+### R2 — Specifikacija Arcade moda
+
+**Status:** usvojena preporučena opcija po zahtevu da se nastavi implementacija.
+Classic + Arcade sa nivoima i ubrzavanjem. Prepreke, bonusi i rekord ostaju
+zasebni predlozi za kasnije.
+**Kontekst:** zajednički; M1, M2; postojeći game tipovi/config/logika,
+`src/main.ts`, `tests/config.test.ts`, `tests/logic.test.ts`, `evals/evals.test.ts`.
+**Dozvoljeni fajlovi kad se zadatak izabere:** `docs/GAME_SPEC.md`,
+`docs/IMPLEMENTATION_STEPS.md`, `Plan.md`.
+
+**Zaključena pravila:**
+- Režim je `classic` ili `arcade`, podrazumevano Classic. `?mode=classic` ili
+  `?mode=arcade` bira početni režim; nepoznata vrednost pada nazad na Classic.
+- `GameConfig` i `?config` ostaju tačno četiri postojeća polja. Režim je
+  `GameState` metadata, ne novo config polje. Classic pravila se ne menjaju.
+- Arcade počinje istom tablom i zmijom. Svaka obična hrana daje jedan poen i
+  jedan segment. Nivo je `1 + floor(score / 5)`. Arcade ignoriše `winScore`;
+  pobeda nastupa kad nema slobodnog polja za novu hranu. Sudar je poraz.
+- Arcade interval je `max(60, config.tickMs - 10 * (level - 1))` ms. Classic
+  uvek koristi `config.tickMs`. Nivo se izvodi iz score-a, ne čuva odvojeno.
+- Pauza zaustavlja napredovanje. Promena intervala ne sme da duplira/preskoči
+  tick. Restart zadržava izabrani režim i resetuje score, nivo i tempo.
+  Timer ostaje u `main.ts`; game logika ostaje čista.
+- UI prikazuje izbor režima i Arcade nivo. Nema bonusa i prepreka u ovom paketu.
+
+**Prihvatanje:** izabrana pravila uneta u spec i uklonjena samo njihova
+odgovarajuća zabrana iz scope-a; dodati zasebni implementacioni zadaci sa
+dozvoljenim fajlovima i proverama. Definisati testove pragova nivoa, minimuma
+intervala, resetovanja, pauze, nepromenljivosti ulaza i Classic regresije.
+Tajmer ne sme da se duplira ili pravi dodatni potez pri promeni tempa.
+Postojeći testovi i E1–E5 ostaju; novi scenariji ih dopunjuju.
+Prepreke, ako se kasnije izaberu, zahtevaju poseban korak i proveru uticaja
+na AI `danger` pre povratka saveta u taj režim.
+
+**Izlazna komanda:** `git diff --check`; ručni pregled ugovora i kriterijuma.
+
+### R5 — Implementiraj Arcade pravila u game sloju
+
+**Kontekst:** zajednički; M1, M2; game tipovi/logika i postojeći logic testovi.
+**Dozvoljeni fajlovi:** `src/game/types.ts`, `src/game/logic.ts`,
+`tests/arcade.test.ts` (novi; postojeće testove ne menjati).
+
+Dodaj `GameMode`; `GameState` čuva režim; `createInitialState(config, rng,
+mode = "classic")` i `handleSpace` čuvaju režim pri restartu. Arcade ne
+završava na `winScore`, ali pobeđuje kad `spawnFood` vrati `null`. Dodaj čiste
+funkcije `getLevel(score)` i `getTickMs(config, mode, score)` po pravilima R2.
+Bez DOM-a ili tajmera u game sloju.
+
+Novi testovi pokrivaju default Classic, Arcade init/restart, level na 0/4/5/9/10,
+interval 150/140/130 i clamp 60 ms, nastavak preko `winScore`, pobedu pune
+table, Classic pobedu na limitu i pauzirani tick. `tests/logic.test.ts` i E1–E5
+ostaju nepromenjeni.
+**Izlazna komanda:** `npm run typecheck && npm test && npm run eval`.
+
+### R6 — Poveži režim, nivo i tempo u UI
+
+**Kontekst:** zajednički; M1, M4; R5 API, `index.html`, `src/main.ts`.
+**Dozvoljeni fajlovi:** `index.html`, `src/main.ts`.
+
+Dodaj Classic/Arcade select, početnu vrednost iz `?mode=` sa Classic fallback-
+om; promena režima počinje novu `ready` partiju. Nivo prikaži samo u Arcade.
+Podesi timer na `getTickMs`; pri promeni intervala prvo očisti postojeći timer,
+pa postavi jedan novi bez dodatnog tick-a. Pauza ne menja score ili nivo.
+AI panel ostaje uklonjen.
+
+**Izlazna komanda:** `npm run typecheck && npm test && npm run eval && npm run build`.
+**Ručna provera:** oba režima, URL izbor i fallback, promena režima, prelaz
+score 4→5, pauza, restart i odsustvo duplog tick-a.
+
+### R3 — Osavremeni vizuelni sloj
+
+**Status:** implementirano zajedno sa R6 i R4. Typecheck, 85 unit testa,
+5 eval-a i build su prošli. Browser review nije izvršen: lokalni server nije
+mogao da se pokrene u sandbox-u (`listen EPERM`).
+**Procena:** 1–2 sata sa vizuelnom proverom.
+**Kontekst:** zajednički; M1, M4; `index.html`, `src/style.css`, `src/render.ts`,
+`src/main.ts` i `src/game/types.ts` kao read-only integracioni kontekst.
+**Dozvoljeni fajlovi kad se zadatak izabere:** `index.html`, `src/style.css`,
+`src/render.ts`; vizuelna sekcija `docs/GAME_SPEC.md` za izabrani pravac.
+
+**Prihvatanje:** primenjen izabrani raspored/paleta/tipografija; funkcionalni
+ID-jevi i tipovi DOM elemenata kompatibilni sa `requireElement`; `CELL = 20`
+i potpis renderer-a sačuvani; logički koordinatni sistem nezavisan od CSS
+širine; oštar DPR 1/2 prikaz i pravilno ponovno merenje nakon resize-a.
+Stanja ready/running/paused/over/won čitljiva; Arcade nivo jasno prikazan.
+Bez AI panela, lažnih metrika ili novih kontrola igre. Nema spoljnih asseta,
+fontova ili novih zavisnosti.
+Promena CSS širine table mora ukloniti/sinhronizovati postojeći inline
+`canvas.style.width` u renderer-u, da se novi raspored stvarno primeni.
+
+**Izlazna komanda:**
+`npm run typecheck && npm test && npm run eval && npm run build`.
+**Vizuelna provera:** 360 px i desktop, zoom 200%, DPR 1/2, sva stanja igre,
+duga config greška, kontrast i fokus. Priložiti stvarne screenshot-e; build
+sam nije dokaz da izgled radi. Nova funkcionalna dugmad su zaseban zadatak.
+
+### R4 — Nastavi implementaciju i vrati „AI savet“ sledeće nedelje
+
+**Status:** planirano za 28.09–04.10.2026. AI panel i produkciona integracija
+su privremeno uklonjeni; moduli, validatori, fake klijent i testovi ostaju.
+**Kontekst:** zajednički; M4, M1, M2; `docs/TOOL_CONTRACT.md`, tadašnji
+`src/game/types.ts` i pravila, `src/ai/`, AI testovi, HTML/main/CSS;
+izvorni K6–K9 i Plan koraci 9–12 samo prema potrebama konkretnog podzadatka.
+**Dozvoljeni fajlovi za početni pregled:** `docs/IMPLEMENTATION_STEPS.md`,
+`Plan.md`. Implementacija dobija zasebne podzadatke i precizne liste fajlova.
+
+Polazna tačka je postojeća fake implementacija, ne prazan projekat. Proveriti
+šta nedostaje, napraviti podzadatak integracije, pa vratiti panel uz vidljivu
+fake oznaku, read-only granicu, runtime validaciju, kontrolisane greške,
+pauzu i tastaturni fokus. Rok nije automatski feature flag.
+
+Ako nova pravila utiču na savet, prvo uskladiti alat i testove u zasebnom
+koraku. Ne vraćati savet koji ne zna za prepreke ili novi cilj; do usklađivanja
+ograničiti AI na podržani Classic režim uz jasnu oznaku. Ne proširivati
+snapshot ili allowlist bez revizije ugovora. Live provider nije podrazumevan
+deo „implementacije sledeće nedelje“ i zahteva zaseban tehnički zadatak.
+
+**Završno prihvatanje nakon podzadataka:** postojeći AI testovi i nove
+regresije prolaze; browser potvrđuje success, nevalidne argumente/nepoznat
+alat, provider/timeout/malformed odgovor, blokiranje game input-a dok se
+čeka i eksplicitan nastavak Space-om; stanje igre se ne menja savetom.
+**Izlaz početnog pregleda:** `git diff --check`.
+**Izlaz integracionog podzadatka:**
+`npm run typecheck && npm test && npm run eval && npm run build`, uz ručni UI dokaz.
+
+---
+
+## Izvorni koraci K0–K11 — referenca
+
+Sledeći koraci i njihovi testovi ostaju referenca za originalni Core.
+Njihovo ranije automatsko redosledno izvršavanje i AI UI iz K0/K9 ne
+nadjačavaju aktivni R1/R4 raspored. Za novi rad koristi R zadatke iznad.
+
 Koraci se rade **redom, jedan po jedan**. Svaki korak je jedna AI iteracija.
 Posle svakog koraka: pokreni izlaznu komandu sama, upiši red u
 `AI_USAGE_LOG.md`, pa commit.

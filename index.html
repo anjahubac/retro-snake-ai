@@ -7,35 +7,51 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <main>
-      <h1>Pixel Zmija</h1>
-      <p class="subtitle">Sakupi hranu. Izbegni zidove.</p>
-      <section class="hud" aria-label="Stanje igre">
-        <p class="score">Poeni: <span id="score">0</span></p>
-        <p class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Pritisni Space</p>
-      </section>
+    <main class="game-shell">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">ARCADE CLASSICS</p>
+          <h1>Pixel Zmija</h1>
+          <p class="subtitle">Sakupi hranu. Izbegni zidove.</p>
+        </div>
+        <span class="game-mark" aria-hidden="true">PZ<span>_</span></span>
+      </header>
       <p id="config-error" hidden></p>
-      <div id="board-frame">
-        <canvas
-          id="board"
-          role="img"
-          aria-label="Tabla igre Pixel Zmija"
-          aria-describedby="status controls"
-        >
-          Za igru je potreban browser sa podrškom za canvas. Kontrole su opisane ispod table.
-        </canvas>
+      <div class="game-layout">
+        <section class="board-column" aria-label="Tabla igre">
+          <div id="board-frame">
+            <canvas
+              id="board"
+              role="img"
+              aria-label="Tabla igre Pixel Zmija"
+              aria-describedby="status controls"
+            >
+              Za igru je potreban browser sa podrškom za canvas. Kontrole su opisane u bočnoj kartici.
+            </canvas>
+          </div>
+        </section>
+        <aside class="game-sidebar" aria-label="Stanje i kontrole">
+          <section class="hud" aria-label="Stanje igre">
+            <p class="score-label">POENI</p>
+            <p class="score"><span id="score">0</span></p>
+            <p class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Pritisni Space</p>
+          </section>
+          <section class="side-card mode-card" aria-label="Režim igre">
+            <label for="game-mode">Režim igre</label>
+            <select id="game-mode">
+              <option value="classic">Classic</option>
+              <option value="arcade">Arcade</option>
+            </select>
+            <p class="level" id="level" hidden>Nivo <span id="level-value">1</span></p>
+          </section>
+          <section class="side-card controls-card" aria-labelledby="controls-heading">
+            <h2 id="controls-heading">Kontrole</h2>
+            <p class="controls" id="controls"><kbd>↑</kbd> <kbd>←</kbd> <kbd>↓</kbd> <kbd>→</kbd> ili <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd><span>Smer kretanja</span></p>
+            <p class="controls"><kbd>Space</kbd><span>Start, pauza ili nastavak</span></p>
+            <p class="controls-followup">Posle kraja pritisni Space za novu partiju.</p>
+          </section>
+        </aside>
       </div>
-      <p class="controls" id="controls">Strelice / W A S D — smer · Space — start, pauza, nastavak</p>
-      <p class="controls-followup">Posle kraja: Space za novu partiju, zatim Space za start.</p>
-      <section id="hint-panel" data-state="idle" aria-labelledby="hint-heading">
-        <h2 id="hint-heading">AI savet</h2>
-        <button id="hint-btn" type="button">Ask AI for Hint</button>
-        <span id="ai-mode">AI: fake (success)</span>
-        <p id="hint-label">Savet nije zatražen</p>
-        <p id="hint" aria-live="polite" aria-atomic="true"></p>
-        <p class="hint-explanation">Savet važi za stanje pri zahtevu. Igra ne izvršava predloženi potez.</p>
-        <p class="hint-continuation">Space za nastavak pauzirane igre.</p>
-      </section>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

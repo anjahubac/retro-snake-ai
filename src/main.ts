@@ -2,14 +2,12 @@ import { loadConfig, DEFAULT_CONFIG } from "./game/config";
 import {
   changeDirection,
   createInitialState,
-  togglePause,
+  getLevel,
+  getTickMs,
   handleSpace,
   tick,
 } from "./game/logic";
-import type { Direction } from "./game/types";
-import { FAKE_MODES, createFakeClient } from "./ai/fakeClient";
-import type { FakeMode } from "./ai/fakeClient";
-import { requestHint, SAFE_MESSAGE } from "./ai/hintFlow";
+import type { Direction, GameMode } from "./game/types";
 import { CELL, render } from "./render";
 
 function requireElement<T extends Element>(
@@ -25,13 +23,11 @@ function requireElement<T extends Element>(
 
 const canvas = requireElement("#board", HTMLCanvasElement);
 const scoreElement = requireElement("#score", HTMLSpanElement);
+const modeElement = requireElement("#game-mode", HTMLSelectElement);
+const levelElement = requireElement("#level", HTMLParagraphElement);
+const levelValueElement = requireElement("#level-value", HTMLSpanElement);
 const statusElement = requireElement("#status", HTMLParagraphElement);
 const configErrorElement = requireElement("#config-error", HTMLParagraphElement);
-const hintButton = requireElement("#hint-btn", HTMLButtonElement);
-const aiModeElement = requireElement("#ai-mode", HTMLSpanElement);
-const hintPanel = requireElement("#hint-panel", HTMLElement);
-const hintLabel = requireElement("#hint-label", HTMLParagraphElement);
-const hintElement = requireElement("#hint", HTMLParagraphElement);
 const context = canvas.getContext("2d");
 
 if (context === null) {
@@ -40,6 +36,8 @@ if (context === null) {
 const canvasContext: CanvasRenderingContext2D = context;
 
 const params = new URLSearchParams(window.location.search);
+const requestedMode = params.get("mode");
+const initialMode: GameMode = requestedMode === "arcade" ? "arcade" : "classic";
 let config = DEFAULT_CONFIG;
 
 if (params.has("config")) {
@@ -59,15 +57,11 @@ if (params.has("config")) {
   }
 }
 
-const requestedMode = params.get("ai");
-const mode: FakeMode = FAKE_MODES.find((candidate) => candidate === requestedMode) ?? "success";
-const client = createFakeClient(mode);
-aiModeElement.textContent = `AI: fake (${mode})`;
-
 canvas.width = config.gridSize * CELL;
 canvas.height = config.gridSize * CELL;
 
-let state = createInitialState(config, Math.random);
+let state = createInitialState(config, Math.random, initialMode);
+modeElement.value = initialMode;
 
 const STATUS_TEXT = {
   ready: "Pritisni Space",
@@ -81,9 +75,15 @@ function draw(): void {
   render(canvasContext, state);
   const scoreText = String(state.score);
   const statusText = STATUS_TEXT[state.status];
+  const level = String(getLevel(state.score));
+  levelElement.hidden = state.mode !== "arcade";
+  modeElement.value = state.mode;
 
   if (scoreElement.textContent !== scoreText) {
     scoreElement.textContent = scoreText;
+  }
+  if (levelValueElement.textContent !== level) {
+    levelValueElement.textContent = level;
   }
   if (statusElement.textContent !== statusText) {
     statusElement.textContent = statusText;
@@ -101,22 +101,13 @@ const KEY_DIRECTIONS: Readonly<Record<string, Direction>> = {
   d: "right",
 };
 
-let hintPending = false;
-
 document.addEventListener("keydown", (event: KeyboardEvent) => {
-  if (event.target instanceof HTMLButtonElement) {
+  if (event.target instanceof HTMLButtonElement || event.target instanceof HTMLSelectElement) {
     return;
   }
 
   const direction = KEY_DIRECTIONS[event.key] ?? KEY_DIRECTIONS[event.key.toLowerCase()];
   const isSpace = event.code === "Space";
-
-  if (hintPending) {
-    if (isSpace || direction !== undefined) {
-      event.preventDefault();
-    }
-    return;
-  }
 
   if (isSpace) {
     event.preventDefault();
@@ -137,54 +128,30 @@ document.addEventListener("keydown", (event: KeyboardEvent) => {
   draw();
 });
 
-hintButton.addEventListener("click", async () => {
-  if (hintPending) return;
-
-  const restoreButtonFocus = document.activeElement === hintButton;
-  hintPending = true;
-  hintButton.disabled = true;
-  hintElement.setAttribute("aria-busy", "true");
-  hintPanel.dataset.state = "pending";
-  hintLabel.textContent = "Savet se priprema";
-  hintElement.textContent = "Razmišljam…";
-
-  if (state.status === "running") {
-    state = togglePause(state);
-    draw();
-  }
-
-  try {
-    const result = await requestHint({ client, getState: () => state });
-    if (result.ok) {
-      hintElement.textContent = `${result.hint.hint} → ${result.hint.suggestedAction} (${result.hint.urgency})`;
-      hintPanel.dataset.state = "success";
-      hintLabel.textContent = "Savet spreman";
-    } else {
-      hintElement.textContent = result.message;
-      hintPanel.dataset.state = "error";
-      hintLabel.textContent = "Savet nije dostupan";
-    }
-  } catch {
-    hintElement.textContent = SAFE_MESSAGE;
-    hintPanel.dataset.state = "error";
-    hintLabel.textContent = "Savet nije dostupan";
-  } finally {
-    hintPending = false;
-    hintButton.disabled = false;
-    hintElement.removeAttribute("aria-busy");
-    if (
-      restoreButtonFocus &&
-      document.hasFocus() &&
-      (document.activeElement === document.body || document.activeElement === document.documentElement)
-    ) {
-      hintButton.focus();
-    }
-  }
+modeElement.addEventListener("change", () => {
+  const mode: GameMode = modeElement.value === "arcade" ? "arcade" : "classic";
+  state = createInitialState(config, Math.random, mode);
+  draw();
+  syncTickTimer();
 });
 
-window.setInterval(() => {
+let scheduledTickMs = getTickMs(state.config, state.mode, state.score);
+let tickTimer = 0;
+
+function syncTickTimer(): void {
+  const nextTickMs = getTickMs(state.config, state.mode, state.score);
+  if (nextTickMs === scheduledTickMs) return;
+  window.clearInterval(tickTimer);
+  scheduledTickMs = nextTickMs;
+  tickTimer = window.setInterval(runTick, scheduledTickMs);
+}
+
+function runTick(): void {
   state = tick(state, Math.random);
   draw();
-}, config.tickMs);
+  syncTickTimer();
+}
+
+tickTimer = window.setInterval(runTick, scheduledTickMs);
 
 draw();
