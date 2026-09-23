@@ -24,10 +24,23 @@ Nevalidan config prikazuje bezbednu poruku i koristi podrazumevanu konfiguraciju
 
 ## Režimi igre
 
-Classic je podrazumevani režim i završava se na `winScore` poena. Arcade
-ubrzava igru na svakih pet poena i završava se sudarom ili kad se popuni tabla.
-Režim možeš izabrati u interfejsu ili početnim URL parametrom `?mode=arcade`;
-nepoznat režim koristi Classic.
+Classic je podrazumevani režim: svaka hrana donosi jedan poen i jedan segment,
+a partija se dobija na `winScore` poena. Arcade traje do sudara ili popunjavanja
+slobodnog dela table. Režim možeš izabrati u interfejsu ili početnim URL
+parametrom `?mode=arcade`; nepoznat režim koristi Classic. Promena režima
+započinje novu partiju.
+
+U Arcade režimu nivo raste na svakih pet **običnih** hrana. Zmija ubrzava do
+10. nivoa. Od 2. nivoa pojavljuju se prepreke: cilj raste za dve po nivou, do
+18. Broj može biti manji na maloj ili zauzetoj tabli, jer se prepreka ne
+postavlja na zmiju, hranu, bonus ili neposredno pred glavu. Udar u prepreku
+završava partiju.
+
+Od 3. nivoa, na svakih pet običnih hrana može se pojaviti zlatni bonus.
+Donosi od **+3 do +6 poena**, traje od **60 do 32 aktivna poteza** prema nivou
+i ne produžava zmiju. Bonus poeni ne povećavaju nivo niti brzinu. Pauza
+zamrzava njegov rok. Od 11. nivoa tempo, broj prepreka i bonus parametri
+ostaju kao na 10. nivou. Cela [tabela nivoa](Plan.md#arcade-nivoi-1-10) je u Planu.
 
 ## AI savet
 
@@ -42,9 +55,13 @@ npm run typecheck
 npm test
 npm run eval
 npm run build
+npm run coverage
 ```
 
-`npm test` pokreće game i postojeće AI unit testove, `npm run eval` pokreće E1–E5.
+`npm test` pokreće game, AI i DOM/Canvas testove; `npm run eval` pokreće E1–E5.
+`npm run coverage` meri `src/**/*.ts` i zahteva najmanje 90% za iskaze, grane,
+funkcije i linije. Unit testovi koriste lokalni DOM i lažni Canvas kontekst;
+browser pregled ostaje zasebna vizuelna provera.
 
 ## Dokazi i kontekst
 

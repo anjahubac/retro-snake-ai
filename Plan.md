@@ -1,172 +1,63 @@
 # Plan implementacije — Pixel Zmija
 
-## Aktivna revizija — 2026-09-23
+## Aktivno stanje — 2026-09-23
 
-Ovaj deo zamenjuje ranije vremenske pretpostavke. Izvorni plan A/B ispod
-ostaje referenca za prvobitnu implementaciju i testove; nije lista poslova
-koje treba ponovo izvršiti. Aktivni zadaci R0–R4 su u
-[`docs/IMPLEMENTATION_STEPS.md`](docs/IMPLEMENTATION_STEPS.md#revizija-r--aktivni-zadaci).
+Igra u browseru ima Classic i Arcade, responsivan prikaz i savremeniji izgled
+zmije i hrane. Classic se završava na `winScore`; Arcade traje do sudara ili
+popunjavanja slobodnog dela table. Nivo raste na svakih pet običnih hrana,
+a bonus poeni ne menjaju nivo ili tempo. Izbor režima započinje novu partiju.
 
-### R8 — plan progresije Arcade nivoa 1–10
+Arcade prepreke se uvode na nivou 2. Dopunjuju se pri jedenju obične hrane,
+izbegavaju zmiju, hranu, bonus i polja blizu glave. Broj u tabeli je cilj:
+na manjim ili zauzetim tablama stvarni broj može biti niži. Zlatni bonus se
+pokušava stvoriti pri 10, 15, 20… običnih hrana, ako ga nema na tabli. Aktivni
+bonus pamti vrednost i rok pri nastanku; pauza zaustavlja odbrojavanje.
 
-**Status: specifikacija i plan napravljeni; progresija implementirana u R9.**
-Postojeći R7 povećava prepreke samo do 12 i koristi bonus +3/60 poteza.
-Ovaj plan proširuje težinu do nivoa 10. Brojevi su početni balans za probno
-igranje, ne potvrda da je svaki bonus dostižan iz svake pozicije.
+### Arcade nivoi 1-10
 
-Novi nivo dolazi posle svakih pet običnih hrana. Bonus poeni ne utiču na nivo,
-brzinu ili rast zmije. Tempo u tabeli važi za početnih 150 ms; manje je brže.
-Broj prepreka je ukupan cilj, ne broj novih prepreka na tom nivou.
+Intervali važe za podrazumevanih 150 ms na početku partije. Prilagođeni
+`tickMs` koristi `max(60, tickMs - 10 × (min(level, 10) - 1))`.
 
-| Nivo | Obična hrana ukupno | Interval | Cilj prepreka | Zlatni bonus | Trajanje bonusa |
+| Nivo | Obična hrana | Interval | Cilj prepreka | Bonus | Rok bonusa |
 |---|---|---|---|---|---|
-| 1 | 0–4 | 150 ms | 0 | Nema | — |
-| 2 | 5–9 | 140 ms | 2 | Nema | — |
-| 3 | 10–14 | 130 ms | 4 | +3 poena | 60 poteza |
-| 4 | 15–19 | 120 ms | 6 | +3 poena | 56 poteza |
-| 5 | 20–24 | 110 ms | 8 | +4 poena | 52 poteza |
-| 6 | 25–29 | 100 ms | 10 | +4 poena | 48 poteza |
-| 7 | 30–34 | 90 ms | 12 | +5 poena | 44 poteza |
-| 8 | 35–39 | 80 ms | 14 | +5 poena | 40 poteza |
-| 9 | 40–44 | 70 ms | 16 | +6 poena | 36 poteza |
-| 10 | 45–49 | 60 ms | 18 | +6 poena | 32 poteza |
+| 1 | 0–4 | 150 ms | 0 | — | — |
+| 2 | 5–9 | 140 ms | 2 | — | — |
+| 3 | 10–14 | 130 ms | 4 | +3 | 60 poteza |
+| 4 | 15–19 | 120 ms | 6 | +3 | 56 poteza |
+| 5 | 20–24 | 110 ms | 8 | +4 | 52 poteza |
+| 6 | 25–29 | 100 ms | 10 | +4 | 48 poteza |
+| 7 | 30–34 | 90 ms | 12 | +5 | 44 poteza |
+| 8 | 35–39 | 80 ms | 14 | +5 | 40 poteza |
+| 9 | 40–44 | 70 ms | 16 | +6 | 36 poteza |
+| 10 | 45–49 | 60 ms | 18 | +6 | 32 poteza |
 
-**Kako raste težina:** nivo 2 uvodi prepreke; nivo 3 bonus kao opcioni izazov.
-Svaki naredni nivo dodaje dve prepreke i skraćuje vreme za bonus za četiri
-poteza. Uz to raste brzina do nivoa 10 i zmija nastavlja da raste. Više poena
-za bonus nagrađuje rizik, ali propušten bonus ne kažnjava igrača.
+Od nivoa 11 prikazani nivo nastavlja da raste, a parametri težine ostaju kao
+na nivou 10. U Arcade režimu nema pobede na 10. nivou.
 
-**Precizna pravila za implementaciju:**
-- `progress = score - bonusPoints`; prikazani nivo ostaje `1 + floor(progress / 5)`.
-  Parametri težine uzimaju se iz reda `min(level, 10)`. Od nivoa 11 igra se
-  nastavlja sa parametrima nivoa 10; nema automatske pobede na 10. nivou.
-- Za prilagođeni config interval je `max(60, config.tickMs - 10 * (min(level, 10) - 1))`.
-  Brži početni config može ranije dostići minimum; ne obećavati ubrzanje posle toga.
-- Prepreke zadržavaju R7 raspored, povezane prolaze, slobodan obod i udaljenost
-  veću od tri polja od glave. Dopunjuju se pri običnoj hrani, nikada na zmiji,
-  hrani ili bonusu. Ne premeštati postojeće prepreke.
-- Cilj prepreka ograničiti brojem dozvoljenih kandidata na konkretnoj tabli.
-  Na 10×10 tabli R7 raspored ima samo devet kandidata; 18 nije garantovano.
-  Zauzeta ili nebezbedna polja odlažu dopunu do sledeće obične hrane. Bezbednost
-  ima prednost nad brojem iz tabele. UI prikazuje stvarni broj i dostižni cilj.
-- Bonus se pokušava stvoriti pri 10, 15, 20… običnih hrana, najviše jedan aktivan.
-  Ako već postoji bonus, ne zamenjuje se i nema naknadno zakazanog bonusa.
-  Ako nema slobodnog polja, taj pokušaj se preskače.
-- Vrednost i početno trajanje bonusa beleže se pri nastanku. Prelaz nivoa ne
-  menja već aktivan bonus. Uzimanje dodaje njegovu vrednost u score i bonusPoints.
-  Pauza zamrzava trajanje; poslednji potez važi za uzimanje. Prsten prikazuje
-  odnos preostalih poteza prema njegovom početnom trajanju, a ne uvek prema 60.
-- Ostaju R7 pravila za običnu hranu, punu tablu, reset i sudare. Classic ostaje
-  isti, a AI savet ostaje isključen prema ranijem planu.
+### Status i naredni rad
 
-**Provera balansa:** odigrati prelaze svih nivoa na 20×20, zatim proveriti
-10×10 i 30×30, kao i početne intervale 60 i 400 ms. Proveriti da prepreke
-ne zatvaraju prolaze, da su bonus i preostalo vreme čitljivi i da poslednji
-nivoi ostaju igrivi. Po potrebi menjati ovu tabelu pre konačnog prihvatanja.
+| Zadatak | Stanje |
+|---|---|
+| R1 — sakrij AI savet | Implementirano; panel nije u aplikaciji |
+| R2/R5/R6 — Classic i Arcade nivoi | Implementirano |
+| R3 — vizuelno osavremenjivanje | Implementirano; vizuelni browser pregled još nije završen |
+| R7/R8/R9 — prepreke, bonusi, progresija | Implementirano |
+| R10 — dokumentacija i pokrivenost | Pokrivenost `src/**/*.ts` izmerena i testovi prošireni |
+| R4 — povratak AI saveta | Planiran za 28.09–04.10.2026; još nije implementiran |
 
-Implementacioni zadatak i kriterijumi su u `docs/IMPLEMENTATION_STEPS.md`, R9. R9 je implementiran i automatizovane provere prolaze.
+Automatska provera posle R10: 97,55% iskaza, 92,69% grana, 100% funkcija i
+98,28% linija na celom `src/`. Ponoviti sa `npm run coverage`.
 
-### R7 — implementirano: prepreke i bonus hrana
+Sledeći funkcionalni korak je revizija AI saveta u planiranom periodu. Pre
+prikaza saveta u Arcade režimu, read-only alat mora razumeti prepreke i novi
+cilj; do tada AI ostaje van interfejsa. Vizuelno testiranje na 360 px i
+većim ekranima još treba izvršiti u browseru. Lokalni rekord je zaseban
+predlog koji nije implementiran.
 
-Na zahtev korisnika implementiraju se prepreke od nivoa 2 (još dve po nivou,
-do 12) i zlatni bonus od nivoa 3 (+3 poena, 60 poteza). Nivoi i tempo računaju
-samo običnu hranu. Precizna pravila i bezbedno postavljanje su u GAME_SPEC R7.
-Ova odluka zamenjuje ranije predloge za prepreke/bonuse ispod.
-
-### Nalazi pregleda
-
-- Aplikacija, game logika, testovi i AI moduli već postoje. Ranija tvrdnja da
-  repo ima samo dokumentaciju više ne opisuje sadašnje stanje.
-- `index.html` već prikazuje AI panel, a `src/main.ts` zahteva njegove DOM
-  elemente i povezuje lokalni fake klijent. Brisanje samo HTML-a ruši startup.
-- Log beleži 72 unit testa i pet eval-a pri ranijoj implementaciji. To je
-  istorijski rezultat, ne novo izvršavanje tokom ove revizije. Browser provere
-  i screenshot-i u evidenciji još nisu potvrđeni.
-- Postojeći spec isključuje nivoe, prepreke, bonuse i čuvanje rekorda.
-  Predlozi ispod prvo zahtevaju svoj specifikacioni korak; nisu odobrena
-  promena postojećih pravila ili testova.
-
-### Odluke i redosled
-
-| Zadatak | Status / termin | Ishod |
-|---|---|---|
-| R0 — revizija plana i instrukcija | Ova dokumentaciona iteracija | Stvarno stanje, predlozi i izvršivi zadatak za AI panel |
-| R1 — privremeno uklanjanje AI sekcije | Implementirano i provereno | AI moduli/testovi sačuvani; sekcija ostaje isključena do sledeće nedelje |
-| R2 — Arcade nivoi i ubrzavanje | Specifikovano i implementirano; 85 unit testa i 5 eval-a prolaze | Classic ostaje isti; Arcade dobija nivoe, ubrzanje i pobedu na punoj tabli |
-| R3 — savremeniji izgled | Implementiran; browser review čeka mogućnost pokretanja lokalnog servera | Responsivan raspored, nova paleta, izbor režima i vidljiv Arcade nivo |
-| R4 — AI savet | Planiran za 28.09–04.10.2026. | Povratak postojeće fake osnove, integracija i provera |
-
-Na korisnički ispravak, AI panel ostaje privremeno uklonjen do planiranog rada
-28.09–04.10.2026. R2 i R3 su već implementirani.
-
-### Preporuka za kompleksnost: nivo + tempo, pa prepreke
-
-Preporučeni prvi paket je **Classic + Arcade sa nivoima i ubrzavanjem**.
-Classic čuva sadašnjih +1 poen, pobedu na `winScore` i fiksni tempo. Arcade
-daje vidljiv napredak i sve teži izazov uz mali početni skup novih pravila.
-
-| Prioritet | Predlog | Doprinos igri | Obim i zavisnosti |
-|---|---|---|---|
-| 1 | Arcade nivoi i postepeno ubrzavanje | Svakih 5 običnih hrana novi nivo; igrač planira put pod većim pritiskom | Srednji: pravila nivoa, tempo, UI, reset i testovi |
-| 2 | Unapred definisane arene sa preprekama | Put do hrane zahteva izbor rute | Veći: sudari, dostupna polja hrane, validacija mape i AI `danger` |
-| 3 | Bonus hrana ograničenog trajanja | Izbor između bezbedne rute i dodatnih poena | Veći: odvojeni poeni i progres, trajanje u tick-ovima, pauza i spawn |
-| 4 | Lokalni rekord po režimu | Razlog za novu partiju | Mali/srednji: adapter za localStorage, validacija i fallback pri zabrani storage-a |
-
-Početni predlog za Arcade: nivo `1 + floor(običnaHrana / 5)`, interval
-`max(70, početniTickMs - 10 * (nivo - 1))`, bez pobede na 15 poena;
-igra se do sudara ili popunjene table. Brojeve tretirati kao početnu hipotezu
-za balans, proveriti spor i brz početni tempo i definisati validan Arcade
-opseg pre implementacije. `score` i broj pojedenih običnih hrana moraju biti
-različiti pojmovi ako se kasnije dodaju bonusi.
-
-Prepreke bih prvo uvela kao odabranu statičnu arenu na početku partije.
-Tako prepreka ne može iznenada nastati na zmiji ili preseći tekuću putanju.
-Treba proveriti početni slobodan koridor i povezane prolaze; dostupna hrana
-ne znači garanciju da zmija nikada neće sama sebi zatvoriti put.
-
-Bonus za kasniju iteraciju: zasebna zlatna hrana, dodatni poeni i trajanje
-mereno aktivnim tick-ovima. Pauza zamrzava trajanje. R2 mora precizirati
-učestalost, vrednost, rast, kolizije i slučaj bez slobodnog polja.
-Portali, pokretni neprijatelji i više istovremenih power-up-ova ostaju za
-kasnije: prvo treba izbalansirati tempo i arene.
-
-### Vizuelni predlog: savremena arkada sa pixel identitetom
-
-- **Raspored:** centrirana tabla kao glavni element; na desktopu okvir do
-  približno 960 px sa kompaktnim bočnim karticama za status i kontrole.
-  Na širini 360 px sve ide u jednu kolonu bez horizontalnog skrola.
-- **Paleta:** skoro crna `#0B1018`, površine `#151E2B`, glavni tekst
-  `#F3F7FC`, sekundarni `#A6B4C8`, mint zmija `#6EE7B7`, koralna hrana
-  `#FB7185`, ljubičasti UI akcent `#A78BFA`. Boje su predlog; kontrast
-  proveriti na stvarnim kombinacijama pre prihvatanja.
-- **Tipografija:** sistemski sans-serif za naslove i uputstva, monospace i
-  tabularne cifre za poene. Bez preuzimanja fontova ili slika.
-- **Tabla:** diskretnija mreža, oštri pixel segmenti i oči koje pokazuju
-  smer; zaobljen spoljašnji okvir i blaga senka daju moderan okvir igri.
-  Logička mreža i `CELL = 20` ostaju odvojeni od CSS veličine i DPR bitmap-a.
-- **Informacije:** sada poeni i status; nivo, progres do sledećeg nivoa i
-  rekord prikazivati tek kada odgovarajuće funkcije postoje. Bez izmišljenih
-  brojeva ili neaktivnih selektora režima.
-- **Kontrole i stanja:** čitljive oznake tastera, jasni start/pauza/kraj
-  overlay-i. Vidljiva Start/Pauza/Nova partija dugmad i touch upravljanje
-  su zasebni funkcionalni predlozi, nisu deo čiste vizuelne izmene R3.
-- **Pristupačnost:** vidljiv fokus, tekstualni status pored boje, DOM opis
-  table, kontrast običnog teksta najmanje 4.5:1. Za buduća dugmad ciljati
-  najmanje 44 × 44 CSS px kao projektni izbor. Dekorativni motion ostaviti
-  za kasniju odluku; sačuvati postojeći `prefers-reduced-motion` tretman.
-
-Osnova pristupačnosti: [W3C — kontrast teksta](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
-i [W3C — veličina kontrola](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html).
-Ovo su smernice za predlog, ne potvrda vizuelnog testa ili pune pristupačnosti.
-
-### Granice ove revizije
-
-Menjaju se plan, rutiranje i fazna dokumentacija. Kod aplikacije, postojeći
-testovi, ugovor alata, raniji promptovi, log i sirova evidencija ostaju
-istorijski izvori. Zahtev korisnika za ovu reviziju zamenjuje raniju zabranu
-izmene instrukcionih fajlova za R0; ne daje narednim zadacima opštu dozvolu
-za menjanje svih dokumenata. Budžet proširenja proceniti zasebno; raniji
-četvoročasovni plan nije procena za novu mehaniku.
+Detaljna aktuelna pravila su u [`docs/GAME_SPEC.md`](docs/GAME_SPEC.md), a zadaci
+i kriterijumi u [`docs/IMPLEMENTATION_STEPS.md`](docs/IMPLEMENTATION_STEPS.md).
+Originalni plan ispod je istorijska referenca; njegove starije pretpostavke
+(uključujući AI panel, stari tempo i odsustvo prepreka) nisu aktuelna pravila.
 
 ---
 

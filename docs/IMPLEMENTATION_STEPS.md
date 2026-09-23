@@ -15,6 +15,23 @@ Zajednički kontekst R zadataka: `AGENTS.md`,
 M1–M5 označavaju numerisane module iz indeksa; čitaju se samo moduli
 navedeni u zadatku. Istorijski promptovi/evidence se ne prepisuju.
 
+### R10 — Uskladi README i Plan sa igrom; izmeri pokrivenost
+
+**Status:** implementirano na zahtev korisnika. README i aktivni Plan su
+usklađeni sa aplikacijom. Pokrivenost celog `src/**/*.ts`: 97,55% iskaza,
+92,69% grana, 100% funkcija i 98,28% linija. Typecheck, 162 unit testa,
+5 eval-a, build i coverage pragovi prolaze.
+**Kontekst:** zajednički; M2, M3, M5; `README.md`, `Plan.md`, `package.json`,
+`src/game/`, `src/ai/`, postojeći testovi i rezultat pokrivenosti.
+**Dozvoljeni fajlovi:** `README.md`, `Plan.md`, `docs/IMPLEMENTATION_STEPS.md`,
+`package.json`, `package-lock.json`, `.gitignore` (ako izveštaj treba ignorisati),
+novi `tests/coverage-gaps.test.ts`. Postojeće testove ne menjati.
+**Prihvatanje:** aktivni opisi odgovaraju kodu; istorijski plan je jasno
+označen; postoji reproduktibilna komanda i numerički rezultat pokrivenosti;
+novi testovi proveravaju ponašanje i ne ponavljaju implementaciju.
+**Izlaz:** `npm run typecheck && npm test && npm run eval && npm run build`,
+komanda za coverage i `git diff --check`. Odvojeno navesti obim merenja.
+
 ### R8 — Dokumentuj progresiju do nivoa 10
 
 **Status:** plan napravljen na zahtev korisnika; kod se u ovom koraku ne menja.
