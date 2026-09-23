@@ -9,9 +9,24 @@
   <body>
     <main>
       <h1>Pixel Zmija</h1>
-      <p>Poeni: <span id="score">0</span> · <span id="status">Pritisni Space</span></p>
+      <p class="subtitle">Sakupi hranu. Izbegni zidove.</p>
+      <section class="hud" aria-label="Stanje igre">
+        <p class="score">Poeni: <span id="score">0</span></p>
+        <p class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Pritisni Space</p>
+      </section>
       <p id="config-error" hidden></p>
-      <canvas id="board"></canvas>
+      <div id="board-frame">
+        <canvas
+          id="board"
+          role="img"
+          aria-label="Tabla igre Pixel Zmija"
+          aria-describedby="status controls"
+        >
+          Za igru je potreban browser sa podrškom za canvas. Kontrole su opisane ispod table.
+        </canvas>
+      </div>
+      <p class="controls" id="controls">Strelice / W A S D — smer · Space — start, pauza, nastavak</p>
+      <p class="controls-followup">Posle kraja: Space za novu partiju, zatim Space za start.</p>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
