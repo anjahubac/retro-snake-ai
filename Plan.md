@@ -7,6 +7,72 @@ ostaje referenca za prvobitnu implementaciju i testove; nije lista poslova
 koje treba ponovo izvršiti. Aktivni zadaci R0–R4 su u
 [`docs/IMPLEMENTATION_STEPS.md`](docs/IMPLEMENTATION_STEPS.md#revizija-r--aktivni-zadaci).
 
+### R8 — plan progresije Arcade nivoa 1–10
+
+**Status: specifikacija i plan napravljeni; progresija implementirana u R9.**
+Postojeći R7 povećava prepreke samo do 12 i koristi bonus +3/60 poteza.
+Ovaj plan proširuje težinu do nivoa 10. Brojevi su početni balans za probno
+igranje, ne potvrda da je svaki bonus dostižan iz svake pozicije.
+
+Novi nivo dolazi posle svakih pet običnih hrana. Bonus poeni ne utiču na nivo,
+brzinu ili rast zmije. Tempo u tabeli važi za početnih 150 ms; manje je brže.
+Broj prepreka je ukupan cilj, ne broj novih prepreka na tom nivou.
+
+| Nivo | Obična hrana ukupno | Interval | Cilj prepreka | Zlatni bonus | Trajanje bonusa |
+|---|---|---|---|---|---|
+| 1 | 0–4 | 150 ms | 0 | Nema | — |
+| 2 | 5–9 | 140 ms | 2 | Nema | — |
+| 3 | 10–14 | 130 ms | 4 | +3 poena | 60 poteza |
+| 4 | 15–19 | 120 ms | 6 | +3 poena | 56 poteza |
+| 5 | 20–24 | 110 ms | 8 | +4 poena | 52 poteza |
+| 6 | 25–29 | 100 ms | 10 | +4 poena | 48 poteza |
+| 7 | 30–34 | 90 ms | 12 | +5 poena | 44 poteza |
+| 8 | 35–39 | 80 ms | 14 | +5 poena | 40 poteza |
+| 9 | 40–44 | 70 ms | 16 | +6 poena | 36 poteza |
+| 10 | 45–49 | 60 ms | 18 | +6 poena | 32 poteza |
+
+**Kako raste težina:** nivo 2 uvodi prepreke; nivo 3 bonus kao opcioni izazov.
+Svaki naredni nivo dodaje dve prepreke i skraćuje vreme za bonus za četiri
+poteza. Uz to raste brzina do nivoa 10 i zmija nastavlja da raste. Više poena
+za bonus nagrađuje rizik, ali propušten bonus ne kažnjava igrača.
+
+**Precizna pravila za implementaciju:**
+- `progress = score - bonusPoints`; prikazani nivo ostaje `1 + floor(progress / 5)`.
+  Parametri težine uzimaju se iz reda `min(level, 10)`. Od nivoa 11 igra se
+  nastavlja sa parametrima nivoa 10; nema automatske pobede na 10. nivou.
+- Za prilagođeni config interval je `max(60, config.tickMs - 10 * (min(level, 10) - 1))`.
+  Brži početni config može ranije dostići minimum; ne obećavati ubrzanje posle toga.
+- Prepreke zadržavaju R7 raspored, povezane prolaze, slobodan obod i udaljenost
+  veću od tri polja od glave. Dopunjuju se pri običnoj hrani, nikada na zmiji,
+  hrani ili bonusu. Ne premeštati postojeće prepreke.
+- Cilj prepreka ograničiti brojem dozvoljenih kandidata na konkretnoj tabli.
+  Na 10×10 tabli R7 raspored ima samo devet kandidata; 18 nije garantovano.
+  Zauzeta ili nebezbedna polja odlažu dopunu do sledeće obične hrane. Bezbednost
+  ima prednost nad brojem iz tabele. UI prikazuje stvarni broj i dostižni cilj.
+- Bonus se pokušava stvoriti pri 10, 15, 20… običnih hrana, najviše jedan aktivan.
+  Ako već postoji bonus, ne zamenjuje se i nema naknadno zakazanog bonusa.
+  Ako nema slobodnog polja, taj pokušaj se preskače.
+- Vrednost i početno trajanje bonusa beleže se pri nastanku. Prelaz nivoa ne
+  menja već aktivan bonus. Uzimanje dodaje njegovu vrednost u score i bonusPoints.
+  Pauza zamrzava trajanje; poslednji potez važi za uzimanje. Prsten prikazuje
+  odnos preostalih poteza prema njegovom početnom trajanju, a ne uvek prema 60.
+- Ostaju R7 pravila za običnu hranu, punu tablu, reset i sudare. Classic ostaje
+  isti, a AI savet ostaje isključen prema ranijem planu.
+
+**Provera balansa:** odigrati prelaze svih nivoa na 20×20, zatim proveriti
+10×10 i 30×30, kao i početne intervale 60 i 400 ms. Proveriti da prepreke
+ne zatvaraju prolaze, da su bonus i preostalo vreme čitljivi i da poslednji
+nivoi ostaju igrivi. Po potrebi menjati ovu tabelu pre konačnog prihvatanja.
+
+Implementacioni zadatak i kriterijumi su u `docs/IMPLEMENTATION_STEPS.md`, R9. R9 je implementiran i automatizovane provere prolaze.
+
+### R7 — implementirano: prepreke i bonus hrana
+
+Na zahtev korisnika implementiraju se prepreke od nivoa 2 (još dve po nivou,
+do 12) i zlatni bonus od nivoa 3 (+3 poena, 60 poteza). Nivoi i tempo računaju
+samo običnu hranu. Precizna pravila i bezbedno postavljanje su u GAME_SPEC R7.
+Ova odluka zamenjuje ranije predloge za prepreke/bonuse ispod.
+
 ### Nalazi pregleda
 
 - Aplikacija, game logika, testovi i AI moduli već postoje. Ranija tvrdnja da

@@ -17,6 +17,9 @@ export type GameState = {
   snake: Point[]; // snake[0] je glava
   direction: Direction;
   food: Point | null;
+  obstacles: Point[];
+  bonus: { position: Point; value: number; ticksLeft: number; ticksTotal: number } | null;
+  bonusPoints: number;
   score: number;
   status: Status;
 };

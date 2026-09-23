@@ -15,6 +15,62 @@ Zajednički kontekst R zadataka: `AGENTS.md`,
 M1–M5 označavaju numerisane module iz indeksa; čitaju se samo moduli
 navedeni u zadatku. Istorijski promptovi/evidence se ne prepisuju.
 
+### R8 — Dokumentuj progresiju do nivoa 10
+
+**Status:** plan napravljen na zahtev korisnika; kod se u ovom koraku ne menja.
+**Kontekst:** zajednički; M3, M5; R7 pravila kao izvor trenutnog stanja.
+**Dozvoljeni fajlovi:** `Plan.md`, `docs/IMPLEMENTATION_STEPS.md`.
+**Ishod:** tabela za nivoe 1–10 u Plan R8, bonus vrednosti i trajanje,
+ponašanje posle nivoa 10, prilagođene table/tempo i odvojeni implementacioni zadatak.
+**Izlazna komanda:** `git diff --check`.
+
+### R9 — Implementiraj progresiju iz Plan R8
+
+**Status:** implementirano prema usvojenoj tabeli Plan R8. Typecheck, 144 unit
+testa, 5 eval-a, build i `git diff --check` prolaze. Browser review nije
+izvršen jer runtime nema povezan browser. GAME_SPEC ažuriran kao R7 + R8.
+**Kontekst:** zajednički; M1, M2, M4; Plan R8, game logika/tipovi, main,
+renderer i postojeći Arcade testovi.
+**Dozvoljeni fajlovi:** `src/game/types.ts`, `src/game/logic.ts`, `src/main.ts`,
+`src/render.ts`, `src/style.css`, `index.html`, `tests/arcade-items.test.ts`, `docs/GAME_SPEC.md`, `docs/IMPLEMENTATION_STEPS.md`, `Plan.md`.
+
+**Rad i prihvatanje:**
+1. Uskladiti spec; napraviti jedinstven izvor parametara nivoa za game sloj i UI.
+2. Uvesti cilj do 18 prepreka sa limitom broja kandidata; sačuvati bezbedno
+   postavljanje i odloženu dopunu iz R7. UI prikazuje stvarni broj/cilj.
+3. Bonus dobija vrednost i početno trajanje pri nastanku prema R8 tabeli.
+   UI, prsten i dodela poena koriste te podatke; aktivni bonus se ne menja
+   na prelazu nivoa. Nivo/tempo i dalje zavise samo od obične hrane.
+4. Testirati svaki red tabele, granice 4→5, 9→10, …, 44→45 i 49→50,
+   sva bonus trajanja/vrednosti, poslednji potez, pauzu, reset i immutability.
+   Proveriti 10/20/30 mreže, minimum intervala i fiksne parametre od nivoa 10.
+5. Ažurirati zastarele R7 provere u `tests/arcade-items.test.ts` tako da
+   precizno proveravaju tabelu R8; ne uklanjati ih niti slabiti asercije.
+   Dodati pokrivanje svih nivoa, tabli i prelaza sa aktivnim bonusom.
+6. Classic regresije i AI testovi ostaju; AI panel se ne vraća.
+
+**Izlaz:** `npm run typecheck && npm test && npm run eval && npm run build`;
+`git diff --check`. Ručno proveriti balans svih deset nivoa, čitljivost na
+360 px i desktopu, prelaz nivoa sa aktivnim bonusom i nastavak posle nivoa 10.
+Automatske provere i vizuelnu proveru prijaviti odvojeno.
+
+### R7 — Prepreke i bonusi u Arcade režimu
+
+**Status:** implementirano po izričitom zahtevu korisnika. Typecheck, 114 unit
+testova, 5 eval-a, build i diff provera prolaze. Vizuelna provera nije
+izvršena: lokalni server radi, ali Browser runtime nema povezan browser.
+**Kontekst:** zajednički; M1, M2, M4; game logika, renderer, main i postojeći testovi.
+**Dozvoljeni fajlovi:** `src/game/types.ts`, `src/game/logic.ts`, `src/render.ts`,
+`src/main.ts`, `src/style.css`, `index.html`, `tests/arcade-items.test.ts`,
+`docs/GAME_SPEC.md`, `docs/IMPLEMENTATION_STEPS.md`, `Plan.md`.
+
+Pravila su u R7 sekciji GAME_SPEC. Implementirati sudare, bezbedno postavljanje,
+bonus poene odvojene od napretka, prikaz i reset. Classic i AI integracija
+ostaju nepromenjeni. Testirati pragove, spawn, istek i poslednji potez bonusa,
+pauzu, reset, nepromenljivost, punu tablu i Classic regresiju.
+**Izlaz:** `npm run typecheck && npm test && npm run eval && npm run build`,
+`git diff --check`. Browser provera se navodi zasebno.
+
 ### R0 — Revizija plana i instrukcija
 
 **Scope:** isključivo dokumentacija, po zahtevu korisnika od 2026-09-23.

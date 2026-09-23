@@ -9,9 +9,16 @@ type Palette = {
   text: string;
   accent: string;
   head: string;
+  headShadow: string;
   body: string;
   tail: string;
+  snakeGlow: string;
   food: string;
+  foodLight: string;
+  foodShadow: string;
+  leaf: string;
+  obstacle: string;
+  bonus: string;
   success: string;
   error: string;
 };
@@ -27,9 +34,16 @@ function readPalette(): Palette {
     text: read("--text"),
     accent: read("--accent"),
     head: read("--snake-head"),
+    headShadow: read("--snake-shadow"),
     body: read("--snake-body"),
     tail: read("--snake-tail"),
+    snakeGlow: read("--snake-glow"),
     food: read("--food"),
+    foodLight: read("--food-light"),
+    foodShadow: read("--food-shadow"),
+    leaf: read("--food-leaf"),
+    obstacle: read("--obstacle"),
+    bonus: read("--bonus"),
     success: read("--success"),
     error: read("--error"),
   };
@@ -54,25 +68,6 @@ function fillSnappedRect(
   ctx.fillRect(left, top, right - left, bottom - top);
 }
 
-function hexToRgb(hex: string): [number, number, number] {
-  const value = hex.startsWith("#") ? hex.slice(1) : hex;
-  return [
-    Number.parseInt(value.slice(0, 2), 16),
-    Number.parseInt(value.slice(2, 4), 16),
-    Number.parseInt(value.slice(4, 6), 16),
-  ];
-}
-
-function interpolateColor(start: string, end: string, factor: number): string {
-  const from = hexToRgb(start);
-  const to = hexToRgb(end);
-  const channels = from.map((value, index) =>
-    Math.round(value + ((to[index] ?? value) - value) * factor),
-  );
-
-  return `rgb(${channels[0]} ${channels[1]} ${channels[2]})`;
-}
-
 function drawGrid(
   ctx: CanvasRenderingContext2D,
   gridSize: number,
@@ -92,78 +87,172 @@ function drawGrid(
 function drawFood(
   ctx: CanvasRenderingContext2D,
   food: Point,
-  scale: number,
   color: string,
+  palette: Palette,
 ): void {
-  const x = food.x * CELL;
-  const y = food.y * CELL;
-  ctx.fillStyle = color;
-  fillSnappedRect(ctx, x + 8, y + 3, 4, 3, scale);
-  fillSnappedRect(ctx, x + 5, y + 6, 10, 3, scale);
-  fillSnappedRect(ctx, x + 3, y + 9, 14, 3, scale);
-  fillSnappedRect(ctx, x + 5, y + 12, 10, 3, scale);
-  fillSnappedRect(ctx, x + 8, y + 15, 4, 2, scale);
+  const centerX = food.x * CELL + CELL / 2;
+  const centerY = food.y * CELL + 11;
+
+  ctx.save();
+  const glow = ctx.createRadialGradient(centerX, centerY, 1, centerX, centerY, 11);
+  glow.addColorStop(0, `${color}55`);
+  glow.addColorStop(1, `${color}00`);
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, 11, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.shadowColor = `${color}66`;
+  ctx.shadowBlur = 5;
+  const fruit = ctx.createLinearGradient(centerX - 5, centerY - 7, centerX + 5, centerY + 7);
+  fruit.addColorStop(0, palette.foodLight);
+  fruit.addColorStop(0.48, color);
+  fruit.addColorStop(1, palette.foodShadow);
+  ctx.fillStyle = fruit;
+  ctx.beginPath();
+  ctx.ellipse(centerX, centerY, 6.5, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "rgb(255 255 255 / 72%)";
+  ctx.beginPath();
+  ctx.ellipse(centerX - 2.5, centerY - 3, 1.4, 2, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = palette.foodShadow;
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(centerX, centerY - 6);
+  ctx.quadraticCurveTo(centerX + 0.5, centerY - 9, centerX + 2, centerY - 9.5);
+  ctx.stroke();
+
+  ctx.fillStyle = palette.leaf;
+  ctx.beginPath();
+  ctx.ellipse(centerX + 4, centerY - 8, 2.6, 1.25, -0.45, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawArcadeItems(ctx: CanvasRenderingContext2D, state: GameState, palette: Palette): void {
+  if (state.mode !== "arcade") return;
+  ctx.save();
+  for (const point of state.obstacles) {
+    const x = point.x * CELL + 2;
+    const y = point.y * CELL + 2;
+    ctx.fillStyle = palette.obstacle;
+    ctx.beginPath();
+    ctx.roundRect(x, y, 16, 16, 4);
+    ctx.fill();
+    ctx.strokeStyle = palette.board;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 5, y + 5);
+    ctx.lineTo(x + 11, y + 11);
+    ctx.moveTo(x + 11, y + 5);
+    ctx.lineTo(x + 5, y + 11);
+    ctx.stroke();
+  }
+  if (state.bonus) {
+    const x = state.bonus.position.x * CELL + CELL / 2;
+    const y = state.bonus.position.y * CELL + CELL / 2;
+    ctx.fillStyle = palette.bonus;
+    ctx.shadowColor = palette.bonus;
+    ctx.shadowBlur = 7;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i += 1) {
+      const angle = i * Math.PI / 5 - Math.PI / 2;
+      const radius = i % 2 === 0 ? 8 : 4;
+      const px = x + Math.cos(angle) * radius;
+      const py = y + Math.sin(angle) * radius;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = palette.bonus;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(x, y, 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * state.bonus.ticksLeft / state.bonus.ticksTotal);
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 function drawSnake(
   ctx: CanvasRenderingContext2D,
   state: GameState,
-  scale: number,
   palette: Palette,
 ): void {
   const { snake } = state;
-  const denominator = Math.max(1, snake.length - 2);
+  const tail = snake[snake.length - 1];
+  const head = snake[0];
+  if (head === undefined || tail === undefined) return;
 
-  for (let index = snake.length - 1; index >= 1; index -= 1) {
+  const path = new Path2D();
+  path.moveTo(tail.x * CELL + CELL / 2, tail.y * CELL + CELL / 2);
+  for (let index = snake.length - 2; index >= 0; index -= 1) {
     const segment = snake[index];
-    if (segment === undefined) continue;
-
-    const factor = (index - 1) / denominator;
-    ctx.fillStyle = interpolateColor(palette.body, palette.tail, factor);
-    fillSnappedRect(
-      ctx,
-      segment.x * CELL + 1,
-      segment.y * CELL + 1,
-      18,
-      18,
-      scale,
-    );
+    if (segment !== undefined) {
+      path.lineTo(segment.x * CELL + CELL / 2, segment.y * CELL + CELL / 2);
+    }
   }
 
-  const head = snake[0];
-  if (head === undefined) return;
+  const bodyGradient = ctx.createLinearGradient(
+    head.x * CELL + CELL / 2,
+    head.y * CELL + CELL / 2,
+    tail.x * CELL + CELL / 2,
+    tail.y * CELL + CELL / 2,
+  );
+  bodyGradient.addColorStop(0, palette.body);
+  bodyGradient.addColorStop(1, palette.tail);
+
+  ctx.save();
+  ctx.lineWidth = 14;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.shadowColor = palette.snakeGlow;
+  ctx.shadowBlur = 4;
+  ctx.strokeStyle = bodyGradient;
+  ctx.stroke(path);
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgb(255 255 255 / 24%)";
+  ctx.stroke(path);
+  ctx.restore();
 
   const cellX = head.x * CELL;
   const cellY = head.y * CELL;
-  ctx.fillStyle = palette.head;
-  fillSnappedRect(ctx, cellX + 1, cellY + 1, 18, 18, scale);
+  const face = ctx.createLinearGradient(cellX + 2, cellY + 1, cellX + 17, cellY + 19);
+  face.addColorStop(0, palette.body);
+  face.addColorStop(0.35, palette.head);
+  face.addColorStop(1, palette.headShadow);
+  ctx.fillStyle = face;
+  ctx.save();
+  ctx.shadowColor = palette.snakeGlow;
+  ctx.shadowBlur = 5;
+  ctx.beginPath();
+  ctx.roundRect(cellX + 1, cellY + 1, 18, 18, 7);
+  ctx.fill();
+  ctx.restore();
 
-  const eyeRects: ReadonlyArray<readonly [number, number, number]> = [
-    [13, 4, 3],
-    [13, 13, 3],
-  ];
-  const pupilRects: ReadonlyArray<readonly [number, number, number]> = [
-    [15, 5, 1],
-    [15, 14, 1],
-  ];
-  const rotation = { right: 0, down: 1, left: 2, up: 3 }[state.direction];
-  const rotate = (x: number, y: number, size: number): [number, number] => {
-    if (rotation === 1) return [CELL - y - size, x];
-    if (rotation === 2) return [CELL - x - size, CELL - y - size];
-    if (rotation === 3) return [y, CELL - x - size];
+  const orient = (x: number, y: number): [number, number] => {
+    if (state.direction === "down") return [CELL - y, x];
+    if (state.direction === "left") return [CELL - x, CELL - y];
+    if (state.direction === "up") return [y, CELL - x];
     return [x, y];
   };
 
-  ctx.fillStyle = palette.text;
-  for (const [x, y, size] of eyeRects) {
-    const [eyeX, eyeY] = rotate(x, y, size);
-    fillSnappedRect(ctx, cellX + eyeX, cellY + eyeY, size, size, scale);
-  }
-
-  ctx.fillStyle = palette.board;
-  for (const [x, y, size] of pupilRects) {
-    const [pupilX, pupilY] = rotate(x, y, size);
-    fillSnappedRect(ctx, cellX + pupilX, cellY + pupilY, size, size, scale);
+  for (const [eyeX, eyeY] of [[13, 6], [13, 14]] as const) {
+    const [x, y] = orient(eyeX, eyeY);
+    ctx.fillStyle = palette.text;
+    ctx.beginPath();
+    ctx.arc(cellX + x, cellY + y, 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = palette.board;
+    ctx.beginPath();
+    ctx.arc(cellX + x + 0.45, cellY + y, 1.15, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -237,7 +326,8 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState): void {
   ctx.fillStyle = palette.board;
   ctx.fillRect(0, 0, logicalEdge, logicalEdge);
   drawGrid(ctx, state.config.gridSize, scale, palette.grid);
-  if (state.food !== null) drawFood(ctx, state.food, scale, palette.food);
-  drawSnake(ctx, state, scale, palette);
+  if (state.food !== null) drawFood(ctx, state.food, palette.food, palette);
+  drawArcadeItems(ctx, state, palette);
+  drawSnake(ctx, state, palette);
   drawOverlay(ctx, state, palette, logicalEdge, scale);
 }

@@ -58,6 +58,9 @@ export function createInitialState(
     snake,
     direction: "right",
     food: spawnFood(snake, config.gridSize, rng),
+    obstacles: [],
+    bonus: null,
+    bonusPoints: 0,
     score: 0,
     status: "ready",
   };
@@ -67,13 +70,36 @@ export function getLevel(score: number): number {
   return Math.floor(score / 5) + 1;
 }
 
+export type ArcadeLevelSettings = {
+  level: number;
+  obstacleTarget: number;
+  bonusValue: number;
+  bonusTicks: number;
+};
+
+export function getArcadeLevelSettings(level: number): ArcadeLevelSettings {
+  const cappedLevel = Math.min(10, Math.max(1, Math.floor(level)));
+  return {
+    level: cappedLevel,
+    obstacleTarget: Math.min(18, 2 * (cappedLevel - 1)),
+    bonusValue: cappedLevel < 3 ? 0 : Math.floor((cappedLevel + 1) / 2) + 1,
+    bonusTicks: cappedLevel < 3 ? 0 : 60 - 4 * (cappedLevel - 3),
+  };
+}
+
+export function getObstacleCapacity(gridSize: number): number {
+  const axisCount = Math.max(0, Math.ceil((gridSize - 4) / 2));
+  return axisCount * axisCount;
+}
+
 export function getTickMs(
   config: GameConfig,
   mode: GameMode,
   score: number,
 ): number {
   if (mode === "classic") return config.tickMs;
-  return Math.max(60, config.tickMs - 10 * (getLevel(score) - 1));
+  const level = getArcadeLevelSettings(getLevel(score)).level;
+  return Math.max(60, config.tickMs - 10 * (level - 1));
 }
 
 export function startGame(state: GameState): GameState {
@@ -128,6 +154,26 @@ export function changeDirection(
   return { ...state, direction: dir };
 }
 
+// Spaced interior pillars preserve connected corridors and the outer border.
+function addObstacles(state: GameState): Point[] {
+  const obstacles = [...state.obstacles];
+  const target = getArcadeLevelSettings(getLevel(state.score - state.bonusPoints)).obstacleTarget;
+  const head = state.snake[0];
+  const occupied = [...state.snake, ...obstacles];
+  if (state.food) occupied.push(state.food);
+  if (state.bonus) occupied.push(state.bonus.position);
+  for (let y = 2; y < state.config.gridSize - 2; y += 2) {
+    for (let x = 2; x < state.config.gridSize - 2; x += 2) {
+      if (obstacles.length >= target) return obstacles;
+      const point = { x, y };
+      if (Math.abs(x - head.x) + Math.abs(y - head.y) <= 3) continue;
+      if (occupied.some((cell) => samePoint(cell, point))) continue;
+      obstacles.push(point);
+    }
+  }
+  return obstacles;
+}
+
 export function tick(state: GameState, rng: Rng): GameState {
   if (state.status !== "running") {
     return state;
@@ -150,31 +196,50 @@ export function tick(state: GameState, rng: Rng): GameState {
   const eatsFood = state.food !== null && samePoint(nextHead, state.food);
   const bodyToCheck = eatsFood ? state.snake : state.snake.slice(0, -1);
 
-  if (bodyToCheck.some((segment) => samePoint(segment, nextHead))) {
+  if (bodyToCheck.some((segment) => samePoint(segment, nextHead)) ||
+      (state.mode === "arcade" && state.obstacles.some((point) => samePoint(point, nextHead)))) {
     return { ...state, status: "over" };
   }
 
-  if (eatsFood) {
-    const snake = [nextHead, ...state.snake];
-    const score = state.score + 1;
+  const eatsBonus = state.mode === "arcade" && state.bonus !== null &&
+    samePoint(nextHead, state.bonus.position);
+  const snake = [nextHead, ...(eatsFood ? state.snake : state.snake.slice(0, -1))];
+  const bonusValue = eatsBonus ? state.bonus?.value ?? 0 : 0;
+  const score = state.score + (eatsFood ? 1 : 0) + bonusValue;
+  const bonusPoints = state.bonusPoints + bonusValue;
+  let bonus = state.mode === "arcade" && state.bonus && !eatsBonus && state.bonus.ticksLeft > 1
+    ? { ...state.bonus, ticksLeft: state.bonus.ticksLeft - 1 } : null;
 
-    if (state.mode === "classic" && score >= winScore) {
-      return { ...state, snake, score, status: "won" };
-    }
-
-    const food = spawnFood(snake, gridSize, rng);
-    return {
-      ...state,
-      snake,
-      score,
-      food,
-      status: food === null ? "won" : "running",
-    };
+  if (state.mode === "classic" && eatsFood && score >= winScore) {
+    return { ...state, snake, score, status: "won" };
   }
 
+  const obstacles = state.mode === "arcade" && eatsFood
+    ? addObstacles({ ...state, snake, score, bonusPoints, bonus }) : state.obstacles;
+  let food = state.food;
+  if (eatsFood) {
+    food = spawnFood([...snake, ...obstacles, ...(bonus ? [bonus.position] : [])], gridSize, rng);
+    if (!food && bonus) {
+      bonus = null;
+      food = spawnFood([...snake, ...obstacles], gridSize, rng);
+    }
+    const progress = score - bonusPoints;
+    if (state.mode === "arcade" && food && !bonus && progress >= 10 && progress % 5 === 0) {
+      const position = spawnFood([...snake, ...obstacles, food], gridSize, rng);
+      if (position) {
+        const settings = getArcadeLevelSettings(getLevel(progress));
+        bonus = {
+          position,
+          value: settings.bonusValue,
+          ticksLeft: settings.bonusTicks,
+          ticksTotal: settings.bonusTicks,
+        };
+      }
+    }
+  }
   return {
-    ...state,
-    snake: [nextHead, ...state.snake.slice(0, -1)],
+    ...state, snake, score, bonusPoints, obstacles, food, bonus,
+    status: eatsFood && food === null ? "won" : "running",
   };
 }
 

@@ -12,9 +12,8 @@ isključuje njegovu aplikacionu integraciju, uz sačuvane AI module i testove.
 R1 je implementiran; AI panel je uklonjen i ostaje van UI-ja do planiranog
 R4 u periodu 28.09–04.10.2026. AI moduli i testovi ostaju u projektu.
 
-Arcade nivoi i ubrzavanje su usvojeni u R2 ispod. Prepreke, bonus hrana i
-rekord ostaju van scope-a dok zasebna specifikaciona revizija ne usvoji
-konkretan paket. Novi vizuelni pravac je R3.
+Arcade nivoi i ubrzavanje su usvojeni u R2; prepreke i bonus hrana u R7
+na zahtev korisnika. Rekord ostaje van scope-a. Novi vizuelni pravac je R3.
 
 ## Naziv
 
@@ -71,6 +70,37 @@ Tick se izvršava svakih `tickMs` milisekundi. Tick menja stanje **samo** u `run
   Classic koristi `config.tickMs`. Nivo se računa iz score-a.
 - Pauza zaustavlja napredovanje. Promena tempa ne dodaje niti preskače tick.
   Restart čuva režim i resetuje score i tempo.
+
+## Arcade prepreke i bonusi (R7 + progresija R8)
+
+Ova revizija zamenjuje R2 računanje nivoa iz ukupnog score-a.
+
+- Napredak je `score - bonusPoints`: broj običnih hrana. Nivo je `1 + floor(progress / 5)`.
+  Težina koristi `min(level, 10)`; posle desetog nivoa igra se nastavlja sa istim
+  parametrima. Bonus poeni ulaze samo u ukupan rezultat.
+- Cilj prepreka je `min(18, 2 * (min(level, 10) - 1))`, dodatno ograničen brojem
+  kandidata na konkretnoj tabli. Dopunjuju se samo pri jedenju obične hrane,
+  ostaju do kraja partije.
+- Kandidati su unutrašnja polja sa parnim x/y koordinatama (od 2 do
+  gridSize - 3), što ostavlja povezane prolaze i slobodan obod na svim tablama.
+  Preskaču se zmija, hrana, bonus i polja na Manhattan udaljenosti <= 3 od
+  nove glave. Ako nema bezbednih kandidata, broj prepreka može biti manji;
+  dopuna se pokušava pri sledećoj običnoj hrani. Sudar sa preprekom je poraz.
+- Od desete obične hrane (nivo 3), na svakih pet običnih hrana nastaje jedan
+  zlatni bonus ako nema aktivnog bonusa i ima slobodnog polja. Njegovi parametri
+  se uzimaju pri nastanku iz nivoa tada na snazi: vrednost je
+  `floor((level + 1) / 2) + 1`, trajanje `60 - 4 * (level - 3)` poteza.
+  Primeri: nivo 3 +3/60, nivo 4 +3/56, nivo 5 +4/52, nivo 10 +6/32.
+  Bonus ne raste sa zmijom. Pauza/ready/kraj ne troše trajanje; može se uzeti
+  i u poslednjem potezu. Propušten bonus nema kaznu. Već aktivni bonus zadržava
+  svoju vrednost i početno trajanje preko prelaza nivoa.
+- Obična hrana i bonus nikad nisu na zmiji, preprekama ili jedno na drugom.
+  Ako pri stvaranju obične hrane samo bonus zauzima poslednje slobodno polje,
+  bonus se uklanja i to polje postaje obična hrana. Pobeda znači da zmija
+  popunjava sva polja koja nisu prepreke.
+- Restart/promena režima resetuju prepreke, bonus i bonus poene.
+- UI prikazuje napredak, stvarni broj prepreka prema dostižnom cilju, bonus vrednost i preostale poteze.
+  AI ostaje isključen; njegov Arcade danger zahteva R4 reviziju pre povratka.
 
 ## AI savet (R4, sledeća nedelja)
 
@@ -130,7 +160,7 @@ AI daje savet, igra ostaje jedini autoritet nad stanjem.
 - multiplayer, login, korisnički nalozi, online leaderboard
 - backend, baza, deployment
 - zvuk i muzika, animacije osim pomeranja
-- prepreke, power-up-ovi, bonus hrana, procedural generation
+- power-up-ovi osim R7 bonus hrane, proceduralne arene
 - AI-controlled protivnik, AI koji sam igra
 - mobilne kontrole (touch)
 - čuvanje rekorda (ni localStorage)
