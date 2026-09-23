@@ -12,7 +12,7 @@ npm run dev
 ```
 
 Kontrole: strelice ili W/A/S/D menjaju smer; Space pokreće, pauzira/nastavlja,
-a posle kraja priprema novu partiju. Taster Space van AI dugmeta nastavlja igru.
+a posle kraja priprema novu partiju.
 
 `GameConfig` se učitava preko `?config=<JSON>`, na primer:
 
@@ -22,17 +22,7 @@ a posle kraja priprema novu partiju. Taster Space van AI dugmeta nastavlja igru.
 
 Nevalidan config prikazuje bezbednu poruku i koristi podrazumevanu konfiguraciju.
 
-## AI Hint (lokalni fake)
-
-Dugme **Ask AI for Hint** koristi samo deterministički lokalni fake klijent.
-Podržani demo režimi su `success`, `invalid_args`, `unsupported_tool`,
-`timeout`, `provider_error` i `malformed_final`, preko `?ai=<mode>`. Nepoznat
-ili odsutan režim koristi `success`. Primer: `/?ai=timeout`.
-
-Igra se pauzira pre zahteva samo ako je status `running`; savet se prikazuje kao
-tekst i nikada se ne izvršava. **Core put koristi lokalni fake klijent; live
-provider nije testiran.** Nema live poziva, API ključa u browser-u ili mrežnog
-AI zahteva.
+AI savet nije na ekranu. Kod u `src/ai/` ostaje u repou i dalje ga pokrivaju testovi.
 
 ## Provere
 
