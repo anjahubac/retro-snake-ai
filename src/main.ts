@@ -25,7 +25,7 @@ function requireElement<T extends Element>(
 
 const canvas = requireElement("#board", HTMLCanvasElement);
 const scoreElement = requireElement("#score", HTMLSpanElement);
-const statusElement = requireElement("#status", HTMLSpanElement);
+const statusElement = requireElement("#status", HTMLParagraphElement);
 const configErrorElement = requireElement("#config-error", HTMLParagraphElement);
 const hintButton = requireElement("#hint-btn", HTMLButtonElement);
 const aiModeElement = requireElement("#ai-mode", HTMLSpanElement);
@@ -174,6 +174,7 @@ hintButton.addEventListener("click", async () => {
     hintElement.removeAttribute("aria-busy");
     if (
       restoreButtonFocus &&
+      document.hasFocus() &&
       (document.activeElement === document.body || document.activeElement === document.documentElement)
     ) {
       hintButton.focus();
