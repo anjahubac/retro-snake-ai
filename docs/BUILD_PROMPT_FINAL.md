@@ -89,3 +89,20 @@ module i fajlove po iteraciji.
 - Svaki korak koristi samo vlastitu zatvorenu listu fajlova i module koje navodi
   rutiranje; ne uključuje PDF u coding kontekst.
 - Nema prompt-ablation eksperimenta.
+
+
+## Stvarno sprovedene Week 4 dopune
+
+- B1: AI tipovi i validatori za tool proposal, summary/tactical snapshot i
+  finalni HintResponse; tačni K6 i dodatni boundary testovi. Kontekst: security,
+  architecture, testing, TOOL_CONTRACT, game types.
+- B2: jedini read-only `get_game_state` snapshot, kopirani head/food/danger;
+  exact output tests, bez DOM-a i bez poziva game mutatora.
+- B3: lokalni `createFakeClient` i `requestHint`; jedan proposal, validacija pre
+  alata, `structuredClone` stanja, jedan read-only poziv, validacija output-a i
+  finala, odvojeni timeout-i i safe errors. Nema live request-a.
+- B4: `?ai=` fake-mode UI, pauza samo ako igra radi, disabled/pending state,
+  fokus i keyboard zaštita, accessible live region, safe text render. `main.ts`
+  pokazuje samo validan HintResponse ili SAFE_MESSAGE; ne izvršava akciju.
+- K13 evidence navodi lokalne fake rezultate i manual UI review kao odvojen
+  dokaz koji nije dostupan ovom coding okruženju.

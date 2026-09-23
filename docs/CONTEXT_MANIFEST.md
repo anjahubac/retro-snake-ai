@@ -56,7 +56,8 @@ i M1/M2; K3 — K3, GAME_SPEC, index/style/main/types/config/logic i M1/M4; K5 �
 K5 hipoteza, game kod/testovi/eval i baseline izlaz uz M2/M3; K7 — odobreni
 vizuelni korak, renderer API, GAME_SPEC, tri UI/render fajla i M1/M4. Za Week 4
 se koristi samo kontekst u Koracima 9–13, uključujući TOOL_CONTRACT i security
-modul. Nisu prosleđivani privatni URL-ovi, tajne, spoljni game primeri ili ceo
+modul. Na korisnikov kasniji izričit zahtev nastavljen je i Deo B; prvobitni
+raspored u ovom manifestu odražavao je plan „ne ove nedelje“. Nisu prosleđivani privatni URL-ovi, tajne, spoljni game primeri ili ceo
 PDF po implementacionom koraku.
 
 Zaštita tajni i generisanih fajlova: `.gitignore` isključuje `node_modules`,

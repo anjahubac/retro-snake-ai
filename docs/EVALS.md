@@ -25,11 +25,26 @@ Test kod: `tests/hintFlow.test.ts`. Komanda: `npm test`.
 
 | # | Scenario | Očekivanje | Obavezni dokaz | Stvarni rezultat |
 |---|---|---|---|---|
-| T1 | validan zahtev (fake `success`) | `ok: true`, alat pozvan tačno 1×, sa `{ detail: "tactical" }` | spy `toHaveBeenCalledTimes(1)`, `toolCalls = 1` | |
-| T2 | invalid arguments (`detail: "everything"`, `executeCode`) | alat nije izvršen, `invalid_tool_call` | `toolCalls = 0`, spy nije pozvan | |
-| T3 | unsupported tool (`set_score`) | ništa nije izvršeno, `unsupported_tool` | allowlist test, `toolCalls = 0` | |
-| T4 | timeout (fake ne odgovara, `timeoutMs: 50`) | `timeout`, SAFE_MESSAGE | `reason`, `produceHint` pozvan 0× | |
-| T5 | provider failure (fake baca grešku) | `provider_error`, SAFE_MESSAGE | `reason` | |
-| T6 | malformed tool output (`{ score: "lots" }`) | nema lažnog success-a, `invalid_tool_output` | `produceHint` pozvan 0× | |
-| T7 | malformed final output | UI ne dobija hint, `invalid_final` | final validation | |
-| T8 | read-only | stanje igre identično pre i posle | `toEqual(structuredClone(before))` | |
+| T1 | validan zahtev (fake `success`) | `ok: true`, alat pozvan tačno 1×, sa `{ detail: "tactical" }` | spy `toHaveBeenCalledTimes(1)`, `toolCalls = 1` | PASS — `ok:true`, `toolCalls=1`, alat tačno 1× sa `{detail:"tactical"}`; client attempts propose=1, produce=1. |
+| T2 | invalid arguments (`detail: "everything"`, `executeCode`) | alat nije izvršen, `invalid_tool_call` | `toolCalls = 0`, spy nije pozvan | PASS — `invalid_tool_call`, `toolCalls=0`; alat nije pozvan, `produceHint=0`. |
+| T3 | unsupported tool (`set_score`) | ništa nije izvršeno, `unsupported_tool` | allowlist test, `toolCalls = 0` | PASS — `unsupported_tool`, `toolCalls=0`; alat nije pozvan pre allowlist odbijanja. |
+| T4 | timeout (fake ne odgovara, `timeoutMs: 50`) | `timeout`, SAFE_MESSAGE | `reason`, `produceHint` pozvan 0× | PASS — `timeout`, `toolCalls=0`; `produceHint=0`. |
+| T5 | provider failure (fake baca grešku) | `provider_error`, SAFE_MESSAGE | `reason` | PASS — `provider_error`, `toolCalls=0`, bez izlaganja provider poruke. |
+| T6 | malformed tool output (`{ score: "lots" }`) | nema lažnog success-a, `invalid_tool_output` | `produceHint` pozvan 0× | PASS — `invalid_tool_output`, `toolCalls=1`; `produceHint=0`. |
+| T7 | malformed final output | UI ne dobija hint, `invalid_final` | final validation | PASS — `invalid_final`, `toolCalls=1`; nevalidan final nije vraćen UI-u. |
+| T8 | read-only | stanje igre identično pre i posle | `toEqual(structuredClone(before))` | PASS — state jednak `structuredClone(before)` posle flow-a. |
+
+### Dodatni boundary testovi (8)
+
+| Test | Stvarni rezultat |
+|---|---|
+| ai-boundary: nekonačni brojevi u summary/head/food | PASS |
+| ai-boundary: dodatna nested polja i neboolean danger | PASS |
+| ai-boundary: trimovan hint, ulaz nepromenjen | PASS |
+| hintFlow-boundary: tačan snapshot/args/final; klijent ne može mutirati igru | PASS; alat 1×, oba provider poziva 1× |
+| hintFlow-boundary: greška druge provider faze | PASS; safe `provider_error`, alat 1×, nema ponavljanja |
+| hintFlow-boundary: timeout druge faze | PASS; timer count 0, kasni final ignoriše se |
+| hintFlow-boundary: kasni proposal posle timeout-a | PASS; alat i final nisu pozvani, timer count 0 |
+| hintFlow-boundary: izuzetak alata | PASS; safe `provider_error`, `toolCalls=1`, final poziv 0× |
+
+Detaljna imena i stvarni verbose izlaz: `docs/runs/ai-test-matrix.txt`.

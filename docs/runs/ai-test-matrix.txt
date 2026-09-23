@@ -1,0 +1,85 @@
+
+> retro-snake-ai@1.0.0 test
+> vitest run tests --reporter=verbose
+
+
+ RUN  v5.0.1 /Users/anjahubac/Projects/retro-snake-ai
+
+ ✓ tests/config.test.ts > validateConfig > prihvata DEFAULT_CONFIG 1ms
+ ✓ tests/config.test.ts > validateConfig > prihvata granične vrednosti 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: string 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: null 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: niz 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: fali polje 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: pogrešan tip 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: nije ceo broj 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: ispod minimuma 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: iznad maksimuma 0ms
+ ✓ tests/config.test.ts > validateConfig > odbija: višak ključ 0ms
+ ✓ tests/config.test.ts > validateConfig > skuplja sve greške 0ms
+ ✓ tests/config.test.ts > loadConfig > vraća ulaz kad je validan 0ms
+ ✓ tests/config.test.ts > loadConfig > vraća DEFAULT_CONFIG i greške kad nije validan 0ms
+ ✓ tests/ai-boundary.test.ts > AI granica — dodatne provere > odbija nekonacne brojeve i u ugnjezdenim tackama 1ms
+ ✓ tests/ai-boundary.test.ts > AI granica — dodatne provere > odbija dodatna ugnjezdena polja i neboolean danger 0ms
+ ✓ tests/ai-boundary.test.ts > AI granica — dodatne provere > vraca trimovan hint bez menjanja ulaza 1ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > prihvata dozvoljen poziv 1ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > odbija alat van allowliste 0ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > odbija: pogrešan detail 0ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > odbija: executeCode 0ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > odbija: bez args 0ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > odbija: višak ključ na vrhu 0ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > odbija: nije objekat 0ms
+ ✓ tests/ai-validate.test.ts > validateToolCall > odbija: name nije string 0ms
+ ✓ tests/ai-validate.test.ts > validateSnapshot > prihvata ispravne snapshot-e 0ms
+ ✓ tests/ai-validate.test.ts > validateSnapshot > odbija višak ključ 0ms
+ ✓ tests/ai-validate.test.ts > validateSnapshot > odbija pogrešan tip 0ms
+ ✓ tests/ai-validate.test.ts > validateSnapshot > odbija tactical bez danger 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > prihvata ispravan odgovor 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > odbija: prazan hint 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > odbija: predug hint 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > odbija: nepoznata akcija 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > odbija: nepoznat urgency 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > odbija: višak ključ 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > odbija: fali ključ 0ms
+ ✓ tests/ai-validate.test.ts > validateHintResponse > odbija: nije objekat 0ms
+ ✓ tests/logic.test.ts > createInitialState > zmija u sredini, smer desno, status ready, hrana na prvom slobodnom polju 1ms
+ ✓ tests/logic.test.ts > start, pauza, space > startGame: ready -> running 0ms
+ ✓ tests/logic.test.ts > start, pauza, space > togglePause: running <-> paused 0ms
+ ✓ tests/logic.test.ts > start, pauza, space > handleSpace posle kraja pravi novu partiju 1ms
+ ✓ tests/logic.test.ts > changeDirection > prihvata okret za 90° 0ms
+ ✓ tests/logic.test.ts > changeDirection > ignoriše okret za 180° 0ms
+ ✓ tests/logic.test.ts > changeDirection > ignoriše promenu posle kraja 0ms
+ ✓ tests/logic.test.ts > tick > ne menja stanje kad igra nije running 0ms
+ ✓ tests/logic.test.ts > tick > pomera zmiju za jedno polje 0ms
+ ✓ tests/logic.test.ts > tick > ne menja ulazno stanje 0ms
+ ✓ tests/logic.test.ts > tick > jede hranu: +1 poen, raste, nova hrana nije na zmiji 0ms
+ ✓ tests/logic.test.ts > tick > pobeda kad poeni dostignu winScore 0ms
+ ✓ tests/logic.test.ts > tick > kraj kod gornjeg zida, zmija ostaje na tabli 0ms
+ ✓ tests/logic.test.ts > tick > kraj kad glava udari u telo 0ms
+ ✓ tests/logic.test.ts > tick > polje repa je slobodno kad zmija ne jede 0ms
+ ✓ tests/logic.test.ts > spawnFood > vraća jedino slobodno polje 0ms
+ ✓ tests/logic.test.ts > spawnFood > vraća null kad nema slobodnog polja 0ms
+ ✓ tests/tool.test.ts > getGameState > summary vraća samo četiri polja 1ms
+ ✓ tests/tool.test.ts > getGameState > tactical vraća glavu, hranu, tablu i opasnosti 0ms
+ ✓ tests/tool.test.ts > getGameState > zid se računa kao opasnost 0ms
+ ✓ tests/tool.test.ts > getGameState > ne vraća zabranjene podatke 1ms
+ ✓ tests/tool.test.ts > getGameState > read-only: mutacija snapshot-a ne menja igru 0ms
+ ✓ tests/hintFlow-boundary.test.ts > requestHint — dodatne granice > salje tacan snapshot, vraca tacan odgovor i cuva igru od mutacije klijenta 2ms
+ ✓ tests/hintFlow-boundary.test.ts > requestHint — dodatne granice > kontrolise provider gresku u drugoj fazi bez ponavljanja poziva 0ms
+ ✓ tests/hintFlow-boundary.test.ts > requestHint — dodatne granice > timeout druge faze cisti tajmere i ignorise zakasneli finalni odgovor 2ms
+ ✓ tests/hintFlow-boundary.test.ts > requestHint — dodatne granice > zakasneli predlog posle timeout-a nikad ne izvrsava alat 0ms
+ ✓ tests/hintFlow-boundary.test.ts > requestHint — dodatne granice > izuzetak izvrsenog alata vraca safe error i ne salje finalni zahtev 0ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T1 validan zahtev: jedan poziv alata, validan hint 2ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T2 nevalidni argumenti: alat nije izvršen 0ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T3 nepoznat alat: ništa nije izvršeno 0ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T4 timeout: kontrolisana greška 51ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T5 provider greška: kontrolisana greška 0ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T6 neispravan izlaz alata: nema lažnog success-a 0ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T7 neispravan finalni odgovor: UI ne dobija hint 0ms
+ ✓ tests/hintFlow.test.ts > requestHint — test matrix > T8 read-only: stanje igre je isto pre i posle 0ms
+
+ Test Files  7 passed (7)
+      Tests  72 passed (72)
+   Start at  13:37:35
+   Duration  181ms (transform 58%, tests 23%, import 15%, worker 5%)
+
